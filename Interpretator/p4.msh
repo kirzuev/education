@@ -1,0 +1,86 @@
+program
+struct st
+{
+	int a,b;
+	string s;
+} m;
+start
+	int a = 0;
+	bool b = true;
+	real r = -8.123;
+	string s = "Hello, world!";
+	m.a = a;
+	m.b = b;
+	start
+		a = a+1;
+		write(m.a,2+3,m.s);
+	finish
+	if (b == true) a = 1
+		else a = 2
+	;
+	(a > 0);
+		start
+			write("a = ",a);
+			a = 0;
+		finish
+#a=5;	else#
+		start
+			write("input a");
+			read(a);
+			write("What is your name?");
+			read(s);
+		finish
+	if() ;
+	int i = 0;
+	while (i < 0)
+		i = i+1
+	;
+	a = 1;
+	while (a>0)
+		start
+			case (a) of
+				1: write(a," go")
+				2: write(a," go")
+			end
+			;
+			write("stop!");
+		finish
+	;
+	while (b == true)
+		b = false
+	;
+	do
+		a = 5
+	while (a!=5);
+	do
+		start
+			b = true;
+			if (a>0)
+				start
+					a = a+1;
+					b = not b;
+				finish
+			else continue
+			;
+		finish
+	while (b != true);
+L:	for (i=0; i<10; i = i+1)
+		write(i)
+	;
+	for (b = true; b != false; b = false)
+		start
+			if (a == -1)
+				break
+			;
+			a = (a+2)*3 % 2;
+			m.a = 1;
+			m.b = 1;
+			write(s);
+		finish
+	;
+	if (b and true)
+		goto L
+	;
+finish
+$
+	

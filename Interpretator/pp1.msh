@@ -1,0 +1,32 @@
+program 
+struct one
+{
+	int q, b;
+	int a;
+} m;
+struct two
+{
+};
+start
+	int a = 3%2;
+	real q = 3%2;
+	a = q*2;
+	a = a+1;
+	real x = x;
+	struct two s;
+	start
+		int a;
+		start	
+			bool a;
+			read(a);
+			write("a = ",a);
+		finish
+		start
+			int a;
+			start
+				x = 0;
+			finish
+		finish
+	finish
+finish
+$

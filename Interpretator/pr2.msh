@@ -1,0 +1,25 @@
+program
+struct one
+{
+	int a;
+	bool b;
+	string s;
+} m;
+start
+	m.a = 2;
+	int x;
+	read(x);
+	real y;
+	read(y);
+	bool q;
+	read(q);
+	write(q);
+	write("y = ",y,0,2,"Hi");
+	m.b = true;
+	m.s = "Hello";
+	m.s = m.s+", world!";
+	write(m.a);
+	write(m.b);
+	write(m.s);
+finish
+$

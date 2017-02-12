@@ -1,0 +1,27 @@
+program
+start
+	write("PRIV!");
+	for (;false;)
+		start
+			write("Oh!");
+			while (true)
+				start
+			write("aaaa!");
+				start
+					if (true)
+						write(4);
+					;
+					break;
+				finish finish
+				;
+			;
+			break;
+		finish;
+	;
+	if (false)
+		write("PRIV!");
+	else
+		write("POKA!");
+	;
+finish
+$

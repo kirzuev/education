@@ -1,0 +1,36 @@
+program
+start
+	int i = 0,j = 0;
+	if ((1+1) == 2) write("SUPER!");
+	;
+	write("i = ",i,"; j = ",j);
+	while (true)
+		start
+			while (true)
+				start
+					#int x;#
+					if (j >= 100)
+						if (0 == 1)
+							1;
+						else
+						start
+							write("break!");
+							break;
+						finish;
+						;
+					;
+					write(i,j);
+					j = j+1;
+					continue;
+					write("!!!!!!!!!!");
+				finish
+				;
+			;
+			j = 0;
+			i = i+1;
+		finish
+		;
+	;
+	write("OK!!!");		
+finish
+$

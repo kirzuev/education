@@ -1,0 +1,20 @@
+program
+
+struct s_one
+{
+	int a;
+} m, m;
+
+start
+#	
+	int a;
+	bool b, a;
+	bool c;
+	string d;
+	start
+		int a;
+		bool a,b,c,d;
+	finish
+#
+finish
+$

@@ -1,0 +1,26 @@
+program
+start
+	int i = 0,j = 0;
+	write("i = ",i,"; j = ",j);
+	while (i < 10)
+		start
+			write(i);
+			while (false)
+				start
+					if (j >= 10)
+						break;
+					;
+					write(i);
+					write(i,j);
+					j = j+1;
+				finish
+				;
+			;
+			j = 0;
+			i = i+1;
+		finish
+		;
+	;
+	write("OK!!!");		
+finish
+$

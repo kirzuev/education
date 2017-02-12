@@ -1,0 +1,15 @@
+program
+start
+#	(5 * 9);#
+
+	bool q;
+	int b = 13;
+	int a = 2+3*5;
+	q = true and false or true;
+	q = not q;
+	write (a);
+	bool e = not q;
+	write (not e);
+
+finish
+$

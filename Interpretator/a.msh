@@ -1,0 +1,11 @@
+program;
+program abc;
+int a, b, c;
+start
+	"qwre" "qewrq" "qwerewr" "rqerqe" "asdf" "adfadsf" "adsadsf"
+	if (a == b) c = a+b; # very useful operation # 
+		else a; # AAAAAAAAAAAAA #
+	string s = "priveei$eeet";
+finish
+
+#end of prog

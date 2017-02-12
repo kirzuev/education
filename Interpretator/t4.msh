@@ -1,0 +1,15 @@
+program
+start
+	real r = 8;
+	real a = 9;
+	real x = a-9+10;
+	x = x+1;
+	write("real: ",r,a,x+1);
+	write(x);
+	string s = "AAAA";
+	string q = "AAAA";
+	string e = q = "BBB";
+	e = e+"c";
+	write("string = ",s,q,e);
+finish
+$

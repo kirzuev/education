@@ -1,0 +1,22 @@
+program
+start
+	for(;false;) 0;;
+	write("OKAY!");
+	for (;;)
+		if (true)
+			if (true)
+				break;
+			;
+		else
+			continue;
+		;
+	;
+	real a = -3;
+	real b;
+	real c = b = a+2;
+	b = b+1;
+	write("a = ",a);
+	write("b = ",b);
+	write("c = ",c);
+finish
+$
