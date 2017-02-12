@@ -1,0 +1,9 @@
+program a;
+const t;
+var a; b:integer; c; d:boolean; e:string; c:char; b:boolean;
+begin
+begin
+if true then writeln(true);
+else goto a;
+end;
+end.

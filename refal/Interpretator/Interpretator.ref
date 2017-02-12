@@ -1,0 +1,501 @@
+interpretator start
+ entry go
+ extrn add, sub, mul, div, dr
+ extrn dgall, rp, p1
+ extrn nrel, proutm
+ extrn prout, card
+ extrn opnget, libget, clsget
+ extrn numb
+* extrn functab
+
+go = <file <card 'Input file: '>> <dgall>
+*go = <file 'a.txt.'> <dgall>
+
+file
+ e1 = <opnget e1> <prog <del_spaces2 <input <libget>>>> <clsget e1>
+
+input
+ e1 'end.' e2 = e1 'end.'
+ R v1 s(LD';):')2 e3 = v1 s2 ' ' <input <libget>>
+  = 
+
+del_spaces2
+ e1 '  ' e2 = <del_spaces2 e1 ' ' e2>
+* e1 s(N)a ' ' e2 = <del_spaces2 e1 s(N)a e2>
+ e1 = e1
+
+err
+ v1 = <proutm 'ERROR: ' v1>
+
+prog
+ 'program ' e1 '; ' e2 'begin ' e3 'end.' = <clear <prog_name <name e1>> <def e2> <oper <syntax <cons_case e3>>>>
+ v1 = <err 'prog: ' v1>
+  = 
+
+prog_name
+ e1 = 
+
+clear
+ e1/err/e2 = <clear e1 e2>
+ e1 = e1
+
+name
+ 'true' = /err/<err 'name: "true" is a language word'>
+ 'false' = /err/<err 'name: "false" is a language word'>
+ 'and' = /err/<err 'name: "and" is a language word'>
+ 'or' = /err/<err 'name: "or" is a language word'>
+ 'not' = /err/<err 'name: "not" is a language word'>
+ 'div' = /err/<err 'name: "div" is a language word'>
+ 'mod' = /err/<err 'name: "mod" is a language word'>
+ 'program' = /err/<err 'name: "program" is a language word'>
+ 'begin' = /err/<err 'name: "begin" is a language word'>
+ 'end' = /err/<err 'name: "end" is a language word'>
+ 'writeln' = /err/<err 'name: "writeln" is a language word'>
+ 'while' = /err/<err 'name: "while" is a language word'>
+ 'if' = /err/<err 'name: "if" is a language word'>
+ 'case' = /err/<err 'name: "case" is a language word'>
+ 'endcase' = /err/<err 'name: "endcase" is a language word'>
+ 'do' = /err/<err 'name: "do" is a language word'>
+ 'for' = /err/<err 'name: "for" is a language word'>
+ 'to' = /err/<err 'name: "to" is a language word'>
+ 'repeat' = /err/<err 'name: "repeat" is a language word'>
+ 'until' = /err/<err 'name: "until" is a language word'>
+ 'then' = /err/<err 'name: "then" is a language word'>
+ 'else' = /err/<err 'name: "else" is a language word'>
+ 'const' = /err/<err 'name: "const" is a language word'>
+ 'var' = /err/<err 'name: "var" is a language word'>
+ 'integer' = /err/<err 'name: "integer" is a language word'>
+ 'boolean' = /err/<err 'name: "boolean" is a language word'>
+ s(L)1 e(LD)2 = s1 e2
+ v1 = /err/<err 'name: ' v1>
+ e1 = /err/<err 'program name not found'>
+
+is_used
+ /err/ = /err/
+ v1 = <cp v1>
+
+push
+ (/err/)e1 = /err/
+ () v2 '=' /err/ e3 = <dg v2>
+ (e1)e2/err/e3 = /err/
+ (v1) v2 '=' e3 = /err/ <err 'name "'v2'" is already used'>
+ () v1 '=' s(/0//2/)2 v(L)3 s4 = <rp v1 '=' s2 v3 s4>
+ () v1 '=' /1/ v(L)2 s3 = <dg v1> /err/<err 'wrong type of "'v1'": "'v2'" is boolean, not integer!'>
+ () v1 '=' s2 v(N'-')3 s4 = <rp v1 '=' s2 v3 s4>
+ e1 = /err/<err 'push: ' e1>
+
+def
+ 'const ' v1 'var ' v2 = <const_sec v1> <var v2>
+ 'var ' v1 = <var v1>
+ 'const ' v1 = <const_sec v1> 
+ ' ' = 
+  = 
+ v1 = <err 'def: ' v1>
+
+const_sec
+ v1 e(' ')a '=' e(' ')b v2 '; ' v3 = <push (<is_used <name v1>>) v1 '=' /0/ <const v2> /1/> <const_sec v3>
+ v1 e(' ')a '=' e(' ')b v2 '; ' = <push (<is_used <name v1>>) v1 '=' /0/ <const v2> /1/>
+ v1 = <err 'const_sec: ' v1>
+  = 
+  
+var
+ v1 '; ' v2 = <section v1> <var v2>
+ v1 '; ' = <section v1>
+ e1 = <err 'var: ' e1>
+ 
+section
+ v1 e(' ')a ',' e(' ')b v((' '))2 e(' ')c ':' e(' ')d v((' '))3 +
+ e(' ')f = <push (<is_used <name v1>>) v1 '=' <type v3> /0/ /0/> <section v2 ':' v3>
+ v1 e(' ')a ':' e(' ')b v((' '))2 e(' ')c = <push (<is_used <name v1>>) v1 '=' <type v2> /0/ /0/>
+ v1 = <err 'section: ' v1>
+ 
+type
+ 'integer' = /1/
+ 'boolean' = /2/
+ v1 = /err/<err 'type: ' v1>
+ 
+const
+ 'true' = 'true'
+ 'false' = 'false'
+ e1 v(D)2 = <sgn e1> <numb v2>
+ v1 = /err/<err 'const: ' v1>
+ 
+sgn
+ '-' = '-'
+ '+' = 
+ v1 = /err/<err 'sgn: ' v1>
+  = 
+
+const_nosgn
+ v(D)1 = <numb v1>
+ v1 = /err/<err 'const_nosgn: ' v1>
+
+assign
+ e1/err/e2 '=' e3 = /err/<dg e1 e2>
+ v1 '=' v2 (e3/err/e4) = /err/
+ v1 '=' (e2/err/e3) = /err/<dg v1>
+ v1 '=' (e2) = /err/<err 'assign: variable "'v1'" is not declared'> <dg v1>
+ v1 '=' /0/ e2 = /err/<err 'assign: "'v1'" is not a variable, it is a const!'>
+ v1 '=' /1/ e2 (v(L)3	) = /err/<err 'assign: "'v1'" type is integer, but "'v3'" type is boolean'>
+ v1 '=' /2/ e2 (v(N'-')3) = /err/<err 'assign: "'v1'" type is boolean, but "'v3'" type is integer'>
+ v1 '=' s2 v3 s4 (v5) = <rp v1 '=' s2 v5 /1/>
+
+check_assign
+ e1/err/e2 '=' e3 = /err/<dg e1 e2>
+ v1 '=' v2 (e3/err/e4) = /err/
+ v1 '=' (e2/err/e3) = /err/<dg v1>
+ v1 '=' (e2) = /err/<err 'assign: variable "'v1'" is not declared'> <dg v1>
+ v1 '=' /0/ e2 = /err/<err 'assign: "'v1'" is not a variable, it is a const!'>
+ v1 '=' /1/ e2 (v(L)3) = /err/<err 'assign: "'v1'" type is integer, but "'v3'" type is boolean'>
+ v1 '=' /2/ e2 (v(N'-')3) = /err/<err 'assign: "'v1'" type is boolean, but "'v3'" type is integer'>
+ v1 '=' s2 v3 s4 (v5) = 
+
+is_int
+  v(L)1 = /err/<err 'expected integer expression, but "'v1'" type is boolean'>
+  v1 = v1
+
+syntax
+ e1 'begin ' e2 = <syntax <begin e1 'begin ' e2>>
+ e1 'repeat ' e2 = <syntax <repeat e1 'repeat ' e2>>
+ e1 'while ' e2 = <syntax e1 <while 'while ' e2>>
+ e1 'for ' e2 = <syntax e1 <for 'for ' e2>>
+ e1 'if ' e2 = <syntax e1 <else 'if ' e2>>
+ e1 (e2) e3 = <syntax e1> (<syntax e2>) <syntax e3>
+ e1 = e1
+
+oper
+* e1 = <proutm e1>
+ (e1) '; ' e2 = <oper e1> <oper e2>
+ (e1) ';' e2 = <oper e1> <oper e2>
+ (e1) ' ' = <oper e1>
+ (e1) = <oper e1>
+ e1/err/e2 = /err/
+ 'writeln(' v1 '); ' e2 = <element_list v1> <oper e2>
+ 'writeln(' v1 ');' e2 = <element_list v1> <oper e2>
+ 'writeln(' v1 ')' e(' ')a = <element_list v1>
+ /repeat/ e1 /until/ v2 = <if <check_op e1>'true' (<oper e1> <if <brackets v2> (/repeat/ e1 /until/ v2)>)>
+ /for/ v1 ':=' v2 ' to ' v3 /for_do/ e4 = <assign <name v1> '=' <cp v1> (<is_int <brackets v2>>)> <oper (/while/ v1 '<=' v3 /do/ (e4 '; ' v1 ':=' v1 '+1')) '; 'v1':='v1'-1'>
+ /while/ v1 /do/ e2 = <if <check_op e2> <brackets v1> ((e2 '; ' /while/ v1 /do/ e2 ))>
+ /case/ v1 ' of ' v2 '; ' v3 = <case <brackets v1> '=' <variant v2> /case/ v1 ' of ' v3>
+ /case/ v1 ' of ' v2 = <case <brackets v1> '=' <variant v2>>
+ /if/ v1 /then/ e2 /else/ e3 = <if <brackets v1> (e2) e3>
+ e(' ')1 '; ' e2 = <oper e2>
+ v1 ':=' v2 '; ' e3 = <assign <name v1> '=' <cp v1> (<brackets v2>)> <oper e3>
+ v1 ':=' v2 ';' e3 = <assign <name v1> '=' <cp v1> (<brackets v2>)> <oper e3>
+ v1 ':=' v2 = <assign <name v1> '=' <cp v1> (<brackets v2>)>
+ e(' ')1  = 
+ v1 '; ' e2 = /err/<err 'oper: ' v1> <oper e2>
+ v1 = /err/<err 'oper: ' v1>
+
+check_op
+ (e1) '; ' e2 = <check_op e1> <check_op e2>
+ (e1) ';' e2 = <check_op e1> <check_op e2>
+ (e1) ' ' = <check_op e1>
+ (e1) = <check_op e1>
+ e1/err/e2 = /err/
+* 'writeln(' v1 '); ' e2 = <is_wrong <check_write v1>> <check_op e2>
+* 'writeln(' v1 ');' e2 = <is_wrong <check_write v1>> <check_op e2>
+* 'writeln(' v1 ')' = <is_wrong <check_write v1>>
+ 'writeln(' v1 '); ' e2 = <check_op e2>
+ 'writeln(' v1 ');' e2 = <check_op e2>
+ 'writeln(' v1 ')' = 
+ /repeat/ e1 /until/ v2 = <check_op e1> <is_wrong <brackets v2>>
+ /while/ v1 /do/ e2 = <is_wrong <brackets v1>> <check_op e2>
+ /for/ v1 ':=' v2 ' to ' v3 /for_do/ e4 = <is_wrong <name v1> <brackets v2> <brackets v3>> <check_op e4>
+ /case/ v1 ' of ' v2 '; ' v3  = <is_wrong <brackets v1> <check_variant v2>> <check_op /case/ v1 ' of ' v3>
+ /case/ v1 ' of ' v2 = <is_wrong <brackets v1> <check_variant v2>>
+ /if/ v1 /then/ e2 /else/ e3 = <is_wrong <brackets v1>> <check_op e2> <check_op e3>
+ v1 ':=' v2 '; ' e3 = <is_wrong <check_assign <name v1> '=' <cp v1> (<brackets v2>)>> <check_op e3>
+ v1 ':=' v2 ';' e3 = <is_wrong <check_assign <name v1> '=' <cp v1> (<brackets v2>)>> <check_op e3>
+ v1 ':=' v2 = <is_wrong <check_assign <name v1> '=' <cp v1> (<brackets v2>)>>
+ v1 '; ' e2 = /err/<err 'oper: ' v1> <check_op e2>
+ e(' ')1 = 
+ v1 = /err/<err 'check_oper: ' v1>
+
+is_wrong
+ e1/err/e2 = /err/
+ e1 = 
+
+check_write
+ e(' ')a v((' '))1 e(' ')b ',' v2 = <element v1> <check_write v2>
+ e(' ')a v((' '))1 e(' ')b = <element v1>
+
+check_variant
+ 'true' e(' ')a ':' e(' ')b e((' '))1 = <check_op e1>
+ 'false' e(' ')a ':' e(' ')b e((' '))1 = <check_op e1>
+ v(LD'-')1 e(' ')a ':' e(' ')b e((' '))2 = <check_op e2>
+ e1 = /err/<err 'check_variant: ' e1>
+
+case
+ e1/err/e2 = /err/
+ e1 (e2/err/e3) = /err/
+ v1 (e2) e3 = <if <brackets v1> (e2) e3>
+ v1 = /err/<err 'case: ' v1>
+
+if
+ e1/err/e2 = /err/
+ e1 (e2/err/e3) = /err/
+ 'true' (e1) e2 = <check_op e2> <oper e1>
+ 'false' (e1) e2 = <check_op e1> <oper e2>
+ e1 = /err/<err 'expected boolean expression'>
+
+expr
+ v1 s('><=')2 s('><=')3 v4 = <logic_op (s2 s3) <nrel_ (<cmp <simple_expr v1>>) <cmp <simple_expr v4>>>>
+ v1 s('><=')2 v3 = <logic_op (s2) <nrel_ (<cmp <simple_expr v1>>) <cmp <simple_expr v3>>>>
+ v1 = <simple_expr v1>
+
+nrel_
+ (e1/err/e2) e3 = /err/
+ (e1) e2/err/e3 = /err/
+ e1 = <nrel e1>
+
+check_expr
+ e1 = <search_err e1> e1
+
+search_err
+ e1/err/e2 = /err/
+ e1 (e2) e3 = <search_err e2>
+ e1 = 
+
+cmp
+ 'true' = /1/
+ 'false' = /0/
+ e1 = e1
+
+brackets
+ e1 ')' e2 = <brackets <brac e1> e2>
+ e1 '(' e2 = /err/<err 'brackets: ' e1 '(' e2>
+ e1 = <check_expr <expr e1>>
+ 
+brac
+ R e1 '(' e2 = e1 (e2)
+ e1 = /err/<err 'brackets: ' e1 ')'>
+
+begin
+ e1 'begin end; ' e2 = <begin e1 e2>
+ e1 'begin end' e2 = <begin e1 e2>
+ e1 ' end' e2 = <begin <beg e1> e2>
+ e1 'begin ' e2 = /err/<err '"end" is expected'>
+ e1 = <check_expr e1>
+
+beg
+ R e1 'begin ' e2 = e1 (e2)
+ e1 = /err/<err '"begin is expected'>
+
+cons_case
+ e1 ' endcase' e2 = <cons_case <find_case e1> e2>
+ e1 'case ' e2 = /err/<err '"endcase" is expected'>
+ e1 = <check_expr e1>
+
+find_case
+ R e1 'case ' e2 = e1 (/case/ e2)
+ e1 = /err/<err '"case" is expected'>
+
+repeat
+* e1 ' until ' e2 ' until ' e3 = <repeat <until e1 /until/ e2> ' until ' e3>
+ e1 ' until ' e2 ';' e3 = <repeat <until e1 /until/ e2> ';' e3>
+ e1 ' until ' e2 = <repeat <until e1 /until/ e2>>
+ e1 'repeat ' e2 = /err/<err '"until" is expected'>
+ e1 = <check_expr e1>
+
+until
+ R e1 'repeat ' e2 = e1 (/repeat/ e2)
+ e1 = /err/<err '"repeat" is expected'>
+
+while
+ e1 ' do ' 'for ' e2 = <while e1 ' do ' <for 'for ' e2>>
+ e1 ' do ' 'if ' e2 = <while e1 ' do ' <else 'if ' e2>>
+ e1 ' do ' 'while ' e2 = <while e1 ' do ' <while 'while ' e2>>
+ e1 ' do ' e2 ';' e3 = <while <do e1 /do/ e2> ';' e3>
+ e1 ' do ' e2 = <while <do e1 /do/ e2>>
+ e1 'while ' e2 = /err/<err '"do" is expected'>
+ e1 = <check_expr e1>
+
+do
+ R e1 'while ' e2 'for ' e3 /do/ e4 = e1 'while ' e2 (/for/ e3 /for_do/ e4)
+ R e1 'while ' e2 = e1 (/while/ e2)
+ R e1 'for ' e2 /do/ e3 = e1 (/for/ e2 /for_do/ e3)
+ e1 = /err/<err '"while" is expected'>
+
+for
+ e1 ' do ' 'for ' e2 = <for e1 ' do ' <for 'for ' e2>>
+ e1 ' do ' 'if ' e2 = <for e1 ' do ' <else 'if ' e2>>
+ e1 ' do ' 'while ' e2 = <for e1 ' do ' <while 'while ' e2>>
+ e1 ' do ' e2 ';' e3 = <for <for_do e1 /for_do/ e2> ';' e3>
+ e1 ' do ' e2 = <for <for_do e1 /for_do/ e2>>
+ e1 'for ' e2 = /err/<err '"do" is expected'>
+ e1 = <check_expr e1>
+
+for_do
+ R e1 'for ' e2 'while ' e3 /for_do/ e4 = e1 'for ' e2 (/while/ e3 /do/ e4)
+ R e1 'for ' e2 = e1(/for/ e2)
+ R e1 'while ' e2 /for_do/ e3 = e1 (/while/ e2 /do/ e3)
+ e1 = /err/<err '"for" is expected'>
+
+else
+ e1 ' else ' 'for ' e2 = <else e1 ' else ' <for 'for ' e2>>
+ e1 ' else ' 'if ' e2 = <else e1 ' else ' <else 'if ' e2>>
+ e1 ' else ' 'while ' e2 = <else e1 ' else ' <while 'while ' e2>>
+ e1 ' else ' e2 ';' e3 = <else <then e1 /else/ e2> ';' e3>
+ e1 ' else ' e2 = <else <then e1 /else/ e2>>
+ e1 'if ' e2 ' then ' e2 = /err/<err '"else" is expected'>
+ e1 'if ' e2 = /err/<err '"then" and "else" are expected'>
+ e1 ' then ' e2 = /err/<err '"if" and "else" are expected'>
+ e1 = <check_expr e1>
+
+then 
+ R e1 'if ' e2 ' then ' e3 = e1(/if/ e2 /then/ e3)
+ R e1 'if ' e2 = /err/<err '"then" is expected'>
+ R e1 ' then ' e2 = /err/<err '"if" is expected'>
+ e1 = /err/<err '"if" and "then" are expected'>
+
+check_begin
+ e1 'begin end; ' e2 = <check_begin e1 e2>
+ e1 'begin end' e2 = <check_begin e1 e1>
+ e1 ' end' e2 = <check_begin <chbeg e1> e2>
+ e1 'begin' e2 = /err/<err '"end" is expected'>
+ e1 = <check_expr <check_op e1>>
+
+chbeg
+ R e1 'begin' e2 = e1 (e2)
+ e1 = /err/<err '"begin is expected'>
+
+logic_op
+ e1 /err/ e2 = /err/
+ ('>=') s('>=')1 e2 = 'true'
+ ('<=') s('<=')1 e2 = 'true'
+ ('<>') '=' e1 = 'false'
+ ('<>') s('><')1 e2 = 'true'
+ (s('><=')1) s1 e2 = 'true'
+ (v('>=<')1) e2 = 'false'
+ v1 = /err/<err 'logic_op: ' v1>
+
+simple_expr
+ R v1 ' or ' v2 = <or (<simple_expr v1>) <summand <convert v2>>>
+ R '-' v1 s('-+')2 v3 = <add_op s2 <simple_expr '-'v1> <summand <convert v3>>>
+ R v1 s('-+')2 v3 = <add_op s2 <simple_expr v1> <summand <convert v3>>>
+ v1 = <summand <convert v1>>
+
+or
+ e1/err/e2 = /err/
+ (e1/err/e2) e3 = /err/
+ ('true') 'true' = 'true'
+ ('true') 'false' = 'true'
+ ('false') 'true' = 'true'
+ ('false') 'false' = 'false'
+ e1 = /err/<err 'or: ' e1>
+
+add_op
+ e1/err/e2 = /err/
+ '+' '-' s(N)1 s(N)2 = <add ('-'s1) s2>
+ '-' '-' s(N)1 s(N)2 = <sub ('-'s1) s2>
+ '+' s(N)1 '-' s(N)2 = <sub (s1) s2>
+ '-' s(N)1 '-' s(N)2 = <add (s1) s2>
+ '+' '-' s(N)1 '-' s(N)2 = <sub ('-'s1) s2>
+ '-' '-' s(N)1 '-' s(N)2 = <add('-'s1) s2>
+ '+' s(N)1 s(N)2 = <add (s1) s2>
+ '-' s(N)1 s(N)2 = <sub (s1) s2>
+ s1 e2 = /err/<err 'add_op: ' e2>
+
+convert
+ e1 ' mod ' e2 = <convert e1 /mod/ e2>
+ e1 ' div ' e2 = <convert e1 /div/ e2>
+ e1 = e1
+
+summand
+ R v1 s(/mod//div/)a v2 = <check0 <summand <convert v1>> sa <multiplier v2>>
+ R v1 ' and ' v2 = <and (<summand <convert v1>>) <multiplier v2>>
+ R v((' '))1 e(' ')a '*' e(' ')a v2 = <mul_ (<summand <convert v1>>) <multiplier v2>>
+ v1 = <multiplier v1> 
+
+mul_
+ (e1/err/e2) e3 = /err/
+ e1/err/e2 = /err/
+ ('-'s(N)1) '-'s(N)2 = <mul ('-'s(N)1) '-'s(N)2>
+ ('-'s(N)1) s(N)2 = <mul ('-'s(N)1) s(N)2>
+ (s(N)1) '-'s(N)2 = <mul (s(N)1) '-'s(N)2>
+ (s(N)1) s(N)2 = <mul (s(N)1) s(N)2>
+ v1 = /err/<err 'mul :' v1>
+
+div_
+ (e1/err/e2) e3 = /err/
+ e1/err/e2 = /err/
+ ('-'s(N)1) '-'s(N)2 = <div ('-'s(N)1) '-'s(N)2>
+ (s(N)1) '-'s(N)2 = <div (s(N)1) '-'s(N)2>
+ ('-'s(N)1) s(N)2 = <div ('-'s(N)1) s(N)2>
+ (s(N)1) s(N)2 = <div (s(N)1) s(N)2>
+ v1 = /err/<err 'div :' v1>
+
+dr_
+ (e1/err/e2) e3 = /err/
+ e1/err/e2 = /err/
+ ('-'s(N)1) '-'s(N)2 = <dr ('-'s(N)1) '-'s(N)2>
+ ('-'s(N)1) s(N)2 = <dr ('-'s(N)1) s(N)2>
+ (s(N)1) '-'s(N)2 = <dr (s(N)1) '-'s(N)2>
+ (s(N)1) s(N)2 = <dr (s(N)1) s(N)2>
+ v1 = /err/<err 'mod :' v1>
+
+check0
+ R s1 s(/div//mod/)a /0/ = /err/<err 'divide by 0'>
+ R e1 /div/ e2 = <div_ (e1) e2>
+ R e1 /mod/ e2 = <mod <dr_ (e1) e2>>
+
+mod
+ e('-')a s1 ('-'s2) = '-'s2
+ e('-')a s1 (s2) = s2
+ /err/ = /err/
+ e1 = /err/<err 'mod: ' e1>
+
+and
+ e1/err/e2 = /err/
+ (e1/err/e2) e3 = /err/
+ ('false') 'false' = 'false'
+ ('true') 'false' = 'false'
+ ('false') 'true' = 'false'
+ ('true') 'true' = 'true'
+ e1 = /err/<err 'and: ' e1>
+
+getvalue
+ (v1) = /err/<err 'variable "'v1'" is not declared'> <dg v1>
+ (v1) v2 /0/ = /err/<err 'variable "'v1'" has not value'>
+ (v1) s2 v3 /1/ = v3
+
+del_minus2
+ '--'e1 = e1
+ e1 = e1
+
+multiplier
+ R 'not ' v1 e(' ')a = <not <multiplier v1>>
+ '-' (v1) e(' ')a = <del_minus2 '-'<expr v1>>
+ (v1) e(' ')a = <expr v1>
+ 'true' e(' ')a = 'true'
+ 'false' e(' ')a = 'false'
+ s(L)1 e(LD)2 e(' ')a = <getvalue (s1 e2) <cp <name s1 e2>>>
+ '-'v(D)1 e(' ')a = <const '-'v1>
+ v(D)1 e(' ')a = <const_nosgn v1>
+ '-'s(N)1 e(' ')a = '-'s1
+ s(N)1 e(' ')a = s1
+ v1 = /err/<err 'multiplier: ' v1>
+
+not
+ 'true' = 'false'
+ 'false' = 'true'
+ e1 = /err/<err 'not: ' e1>
+
+element_list
+ v1 ',' v2 = <print_ <element v1>> <element_list v2>
+ v1 = <print_ <element v1>>
+ 
+print_
+ e1/err/e2 = 
+ e1 = <prout e1>
+ 
+element	
+ v1 = <brackets v1>
+
+variant
+ v1 e(' ')a ':' e(' ')b e((' '))2 = v1 (e2)
+ v1 = /err/<err 'variant: ' v1>
+
+ end
+  

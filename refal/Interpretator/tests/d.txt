@@ -1,0 +1,8 @@
+program q;
+begin
+if false
+  then for i:=1 to 100 do repeat writeln(i); until alse;
+  else if true 
+       then while false do begin begin end; begin begin nothing; end; end; end;
+       else case 1 of 1: writeln(true); 0: writeln(0); endcase;
+end.

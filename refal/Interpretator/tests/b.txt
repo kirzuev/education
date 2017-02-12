@@ -1,0 +1,13 @@
+program a;
+const n=10;
+var x,y:integer; q:boolean;
+begin
+for x:=1 to n do y:=n+x;
+repeat
+q:=y>x;
+y:=y-1;
+until q;
+writeln(x,y);
+n:=1;
+writeln(n);
+end.
