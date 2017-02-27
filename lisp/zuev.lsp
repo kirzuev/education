@@ -188,7 +188,7 @@
         (t (monom (cons (append (car l) (list (cadr l))) (cddr l))))))
 
 ; -- Convert summand to the internal representation
-; -- [sign] [const1] [x] [^ const2] converts to ([sing]const1 const2)
+; -- [sign] [const1] [x] [^ const2] converts to ([sign]const1 const2)
 (defun summand (l)
     (cond
         ((null l) (print "ERROR: empty summand") nil)
