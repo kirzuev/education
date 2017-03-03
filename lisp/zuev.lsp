@@ -41,6 +41,19 @@
             (princ '((2 x) / (6 x ^ 2)))))
         ((= n 9) (main (print '((x ^ 2 + 2 x) / 3)) (princ '+\ )
             (princ '((- x ^ 2 - 2 x + 1) / 3))))
+
+        ((= n 10) (main (print '((2 x - 5) / (4 x ^ 2 - 10 x + 25))) (princ '+\ )
+            (princ '((2 x + 5) / (4 x ^ 2 + 10 x + 25)))))
+        ((= n 11) (main (print '((x - 1) / (x + 1))) (princ '+\ )
+            (princ '((x + 1) / (x - 1)))))
+        ((= n 12) (main (print '((x ^ 2 - x) / (x ^ 2 + x)))
+            (princ '+\ ) (princ '((x + 1) / (x - 1)))))
+        ((= n 13) (main (print '((x ^ 2 + 2 x + 1) / (x + 1))) (princ '+\ )
+            (princ '((2 - x - 3) / 1))))
+        ((= n 14) (main (print '(1 / (x ^ 2 - 2 x + 2))) (princ '+\ )
+            (princ '(1 / (x ^ 2 + 2 x + 2)))))
+        ((= n 15) (main (print '(3 / (x ^ 2 + 1))) (princ '+\ )
+            (princ '((2 + 7 x - 5 - 7 x) / (x ^ 2 + 1)))))
         (t "ERROR: wrong test")))
 
 (defun main (l1 p l2)
@@ -114,8 +127,27 @@
 
 ; -- Read the expressions
 (defun input (l1 p l2)
-    (list (convert (car l1)) (convert (caddr l1))
-          (convert (car l2)) (convert (caddr l2))))
+    (list (convert (car (parse l1))) (convert (caddr (parse l1)))
+          (convert (car (parse l2))) (convert (caddr (parse l2)))))
+
+(defun parse (l)
+    (list (take l) '/ (drop l)))
+
+(defun take (l)
+    (cond
+        ((null l) nil)
+        ((eq '/ (car l)) nil)
+        ((atom (car l)) (cons (car l) (take (cdr l))))
+        (t (car l))))
+
+(defun drop (l)
+    (cond
+        ((null l) nil)
+        ((eq '/ (car l))
+            (cond
+                ((atom (cadr l)) (cdr l))
+                (t (cadr l))))
+        (t (drop (cdr l)))))
 
 ; -- Convert the result to the natural view
 (defun output (l)
@@ -225,12 +257,19 @@
                 (cons (- 0 (cadr l)) (cddddr l)))
         (t (print "ERROR: wrong type of summand") nil)))
 
-(test 1)
-(test 2)
-(test 3)
-(test 4)
-(test 5)
-(test 6)
-(test 7)
-(test 8)
-(test 9)
+;(test 1)
+;(test 2)
+;(test 3)
+;(test 4)
+;(test 5)
+;(test 6)
+;(test 7)
+;(test 8)
+;(test 9)
+
+(test 10)
+(test 11)
+(test 12)
+(test 13)
+(test 14)
+(test 15)
