@@ -21,8 +21,8 @@ data Line = Line
 
 test :: Lgraph
 test = Lgraph
-  { states = ['A', 'B']
-  , symbols = ['a', 'b']
+  { states      = ['A', 'B']
+  , symbols     = ['a', 'b']
   , beginStates = ['A']
   , finalStates = ['B']
   , transitions = [l1, l2, l3, l4]
@@ -51,22 +51,32 @@ test = Lgraph
       }
     l4 = Line
       { oldState = 'B'
-      , symbol   = Just 'b'
+      , symbol   = Just 'a'
       , firstBr  = Just (R 1)
-      , secondBr = Just (R 1)
+      , secondBr = Just (R 2)
       , newState = 'B'
       }
 
 -- | Is the L-graph determined?
-isDetermined :: Lgraph -> Bool
-isDetermined g =
-  and $ concat $ map (\s -> map simpleTrans $ pairs $ filter (\t -> oldState t == s) $ transitions g) $ states g
+isLgraphDetermined :: Lgraph -> Bool
+isLgraphDetermined g = and $ map isStateDetermined $ states g
+  where
+    isStateDetermined s =
+      and $ map simpleTrans $ mkPairs $ takeTransitionsWithState s $ transitions g
+
+-- | Take transitions which started from current state
+takeTransitionsWithState :: State -> [Line] -> [Line]
+takeTransitionsWithState s ts = filter (\t -> oldState t == s) ts
 
 -- | Make the all pairs of the transitions list
-pairs :: [Line] -> [(Line, Line)]
-pairs [] = []
-pairs (x:[]) = []
-pairs (x:xs) = zip (x:xs) xs ++ pairs xs
+mkPairs :: [Line] -> [(Line, Line)]
+mkPairs [] = []
+mkPairs (t:[]) = []
+mkPairs (t:ts) = mkPairWith t ts ++ mkPairs ts
+
+-- | Make pairs of transtions with first argument
+mkPairWith :: Line -> [Line] -> [(Line, Line)]
+mkPairWith t = map (\x -> (t,x))
 
 -- | Check for the determined transition from one state for two lines
 simpleTrans :: (Line, Line) -> Bool
@@ -77,6 +87,7 @@ simpleTrans (x, y) = case (symbol x, symbol y) of
     else checkBrackets (firstBr x) (firstBr y) || checkBrackets (secondBr x) (secondBr y)
   (_, _)             -> False
 
+-- | Check for the determined the transition by its brackets
 checkBrackets :: Maybe Bracket -> Maybe Bracket -> Bool
 checkBrackets (Just (R a)) (Just (R b)) = a /= b
-checkBrackets _          _          = False
+checkBrackets _          _              = False
