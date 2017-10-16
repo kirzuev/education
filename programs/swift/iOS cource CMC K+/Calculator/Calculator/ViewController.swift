@@ -15,8 +15,7 @@ class ViewController: UIViewController {
     
     var isUserTypingToDisplay = false
     
-    var firstOperand: Double?
-    var function: ((Double, Double) -> Double)?
+    let calculator = Calculator()
     
     var displayValue: Double {
         get {
@@ -49,27 +48,24 @@ class ViewController: UIViewController {
             return
         }
         
-        switch operationSymbol {
-            case "√":
-                displayValue = sqrt(displayValue)
-            case "+":
-                firstOperand = displayValue
-                function = { $0 + $1 }
-            case "=":
-                if let operand = firstOperand, let operation = function {
-                    displayValue = operation(operand, displayValue)
-                    firstOperand = nil
-                    function = nil
-                }
-            case "-":
-                firstOperand = displayValue
-                function = { $0 - $1 }
-            case "*":
-                firstOperand = displayValue
-                function = { $0 * $1 }
-            case "/":
-                firstOperand = displayValue
-                function = { $0 / $1 }
+        if operationSymbol != "C" && operationSymbol != "<-" {
+        
+            if isUserTypingToDisplay {
+                calculator.setOperand(displayValue)
+                isUserTypingToDisplay = false
+            }
+        
+            calculator.performOperation(operationSymbol)
+        
+            if let result = calculator.result {
+                displayValue = result
+            }
+
+        } else {
+            
+            switch operationSymbol {
+            case "C":
+                displayLabel.text = "0"
             case "<-":
                 if isUserTypingToDisplay && displayLabel.text != "" {
                     var labelText = displayLabel.text!
@@ -79,14 +75,18 @@ class ViewController: UIViewController {
                     }
                     displayLabel.text = labelText
                 }
-            case "C":
-                displayLabel.text = "0"
             default:
                 break
+            }
+            
+            calculator.setOperand(displayValue)
+            
+            if operationSymbol != "<-" {
+                isUserTypingToDisplay = false
+            }
+            
         }
-        if operationSymbol != "<-" {
-            isUserTypingToDisplay = false
-        }
+
     }
     
 }
