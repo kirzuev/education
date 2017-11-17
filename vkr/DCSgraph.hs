@@ -16,8 +16,8 @@ type State = Char
 data Transition = Transition
   { oldState :: State
   , symbol   :: Maybe Char
-  , firstBr  :: Maybe Bracket
-  , secondBr :: Maybe Bracket
+  , firstBracket  :: Maybe Bracket
+  , secondBracket :: Maybe Bracket
   , newState :: State
   } deriving (Eq, Show)
 
@@ -31,32 +31,32 @@ test1 = Lgraph
   }
   where
     l1 = Transition
-      { oldState = 'A'
-      , symbol   = Just 'b'
-      , firstBr  = Just (L 1)
-      , secondBr = Just (L 1)
-      , newState = 'A'
+      { oldState      = 'A'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 1)
+      , secondBracket = Just (L 1)
+      , newState      = 'A'
       }
     l2 = Transition
-      { oldState = 'A'
-      , symbol   = Just 'b'
-      , firstBr  = Just (L 2)
-      , secondBr = Just (L 1)
-      , newState = 'B'
+      { oldState      = 'A'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 2)
+      , secondBracket = Just (L 1)
+      , newState      = 'B'
       }
     l3 = Transition
-      { oldState = 'B'
-      , symbol   = Just 'a'
-      , firstBr  = Just (R 1)
-      , secondBr = Just (R 1)
-      , newState = 'A'
+      { oldState      = 'B'
+      , symbol        = Just 'a'
+      , firstBracket  = Just (R 1)
+      , secondBracket = Just (R 1)
+      , newState      = 'A'
       }
     l4 = Transition
-      { oldState = 'B'
-      , symbol   = Just 'a'
-      , firstBr  = Just (R 1)
-      , secondBr = Just (R 1)
-      , newState = 'B'
+      { oldState      = 'B'
+      , symbol        = Just 'a'
+      , firstBracket  = Just (R 1)
+      , secondBracket = Just (R 1)
+      , newState      = 'B'
       }
 
 test2 :: Lgraph
@@ -69,32 +69,32 @@ test2 = Lgraph
   }
   where
     l1 = Transition
-      { oldState = 'A'
-      , symbol   = Just 'a'
-      , firstBr  = Just (L 1)
-      , secondBr = Just (L 1)
-      , newState = 'A'
+      { oldState      = 'A'
+      , symbol        = Just 'a'
+      , firstBracket  = Just (L 1)
+      , secondBracket = Just (L 1)
+      , newState      = 'A'
       }
     l2 = Transition
-      { oldState = 'A'
-      , symbol   = Just 'b'
-      , firstBr  = Just (L 2)
-      , secondBr = Just (L 1)
-      , newState = 'B'
+      { oldState      = 'A'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 2)
+      , secondBracket = Just (L 1)
+      , newState      = 'B'
       }
     l3 = Transition
-      { oldState = 'B'
-      , symbol   = Just 'a'
-      , firstBr  = Just (R 1)
-      , secondBr = Just (R 1)
-      , newState = 'A'
+      { oldState      = 'B'
+      , symbol        = Just 'a'
+      , firstBracket  = Just (R 1)
+      , secondBracket = Just (R 1)
+      , newState      = 'A'
       }
     l4 = Transition
-      { oldState = 'B'
-      , symbol   = Just 'a'
-      , firstBr  = Just (R 1)
-      , secondBr = Just (R 2)
-      , newState = 'B'
+      { oldState      = 'B'
+      , symbol        = Just 'a'
+      , firstBracket  = Just (R 1)
+      , secondBracket = Just (R 2)
+      , newState      = 'B'
       }
 
 test3 :: Lgraph
@@ -107,32 +107,32 @@ test3 = Lgraph
   }
   where
     l1 = Transition
-      { oldState = 'A'
-      , symbol   = Just 'a'
-      , firstBr  = Nothing
-      , secondBr = Nothing
-      , newState = 'A'
+      { oldState      = 'A'
+      , symbol        = Just 'a'
+      , firstBracket  = Nothing
+      , secondBracket = Nothing
+      , newState      = 'A'
       }
     l2 = Transition
-      { oldState = 'A'
-      , symbol   = Nothing
-      , firstBr  = Nothing
-      , secondBr = Nothing
-      , newState = 'B'
+      { oldState      = 'A'
+      , symbol        = Nothing
+      , firstBracket  = Nothing
+      , secondBracket = Nothing
+      , newState      = 'B'
       }
     l3 = Transition
-      { oldState = 'B'
-      , symbol   = Nothing
-      , firstBr  = Nothing
-      , secondBr = Nothing
-      , newState = 'A'
+      { oldState      = 'B'
+      , symbol        = Nothing
+      , firstBracket  = Nothing
+      , secondBracket = Nothing
+      , newState      = 'A'
       }
     l4 = Transition
-      { oldState = 'B'
-      , symbol   = Just 'a'
-      , firstBr  = Nothing
-      , secondBr = Nothing
-      , newState = 'B'
+      { oldState      = 'B'
+      , symbol        = Just 'a'
+      , firstBracket  = Nothing
+      , secondBracket = Nothing
+      , newState      = 'B'
       }
 
 test4 :: Lgraph
@@ -145,32 +145,70 @@ test4 = Lgraph
   }
   where
     l1 = Transition
-      { oldState = 'A'
-      , symbol   = Just 'a'
-      , firstBr  = Just (R 1)
-      , secondBr = Just (R 1)
-      , newState = 'A'
+      { oldState      = 'A'
+      , symbol        = Just 'a'
+      , firstBracket  = Just (R 1)
+      , secondBracket = Just (R 1)
+      , newState      = 'A'
       }
     l2 = Transition
-      { oldState = 'A'
-      , symbol   = Nothing
-      , firstBr  = Nothing
-      , secondBr = Just (L 1)
-      , newState = 'B'
+      { oldState      = 'A'
+      , symbol        = Nothing
+      , firstBracket  = Nothing
+      , secondBracket = Just (L 1)
+      , newState      = 'B'
       }
     l3 = Transition
-      { oldState = 'B'
-      , symbol   = Nothing
-      , firstBr  = Just (L 1)
-      , secondBr = Just (L 1)
-      , newState = 'A'
+      { oldState      = 'B'
+      , symbol        = Nothing
+      , firstBracket  = Just (L 1)
+      , secondBracket = Just (L 1)
+      , newState      = 'A'
       }
     l4 = Transition
-      { oldState = 'B'
-      , symbol   = Just 'a'
-      , firstBr  = Just (R 2)
-      , secondBr = Nothing
-      , newState = 'B'
+      { oldState      = 'B'
+      , symbol        = Just 'a'
+      , firstBracket  = Just (R 2)
+      , secondBracket = Nothing
+      , newState      = 'B'
+      }
+
+test5 :: Lgraph
+test5 = Lgraph
+  { states      = ['A', 'B']
+  , symbols     = ['a', 'b']
+  , beginStates = ['A']
+  , finalStates = ['B']
+  , transitions = [l1, l2, l3, l4]
+  }
+  where
+    l1 = Transition
+      { oldState      = 'A'
+      , symbol        = Just 'a'
+      , firstBracket  = Just (R 1)
+      , secondBracket = Just (R 1)
+      , newState      = 'A'
+      }
+    l2 = Transition
+      { oldState      = 'A'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 1)
+      , secondBracket = Nothing
+      , newState      = 'B'
+      }
+    l3 = Transition
+      { oldState      = 'B'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 1)
+      , secondBracket = Nothing
+      , newState      = 'A'
+      }
+    l4 = Transition
+      { oldState      = 'B'
+      , symbol        = Nothing
+      , firstBracket  = Just (R 1)
+      , secondBracket = Nothing
+      , newState      = 'B'
       }
 
 -- =====================
@@ -220,6 +258,13 @@ andIO (x:xs) = do
   vals <- andIO xs
   return $ val && vals
 
+orIO :: [IO Bool] -> IO Bool
+orIO [] = return False
+orIO (x:xs) = do
+  val  <- x
+  vals <- orIO xs
+  return $ val || vals
+
 -- | Take transitions which started from current state
 takeTransitionsWithState :: State -> [Transition] -> [Transition]
 takeTransitionsWithState s ts = filter (\t -> oldState t == s) ts
@@ -241,21 +286,21 @@ showTrans t = [oldState t] ++ " --{ " ++ stateMark ++ " }-> " ++ [newState t]
     mark  = case symbol t of
       Nothing    -> "e"
       Just x     -> [x]
-    fstBr = case firstBr t of
+    fstBr = case firstBracket t of
       Nothing    -> "e"
       Just (L x) -> "(_" ++ show x
       Just (R x) -> ")_" ++ show x
-    sndBr = case secondBr t of
+    sndBr = case secondBracket t of
       Nothing    -> "e"
       Just (L x) -> "[_" ++ show x
       Just (R x) -> "]_" ++ show x
 
--- | Check for the determined transition from one state for two Transitions
+-- | Check for the determined transition from one state for two transitions
 simpleTrans :: (Transition, Transition) -> IO Bool
 simpleTrans (x, y) = case (symbol x, symbol y) of
   (Nothing, Nothing) -> do
-    fstVal <- checkBrackets (firstBr x) (firstBr y)
-    sndVal <- checkBrackets (secondBr x) (secondBr y)
+    fstVal <- checkBrackets (firstBracket x) (firstBracket y)
+    sndVal <- checkBrackets (secondBracket x) (secondBracket y)
     if fstVal || sndVal then
       return True
     else do
@@ -263,8 +308,8 @@ simpleTrans (x, y) = case (symbol x, symbol y) of
       return False
   (Just a, Just b) -> if a /= b then return True
     else do
-      fstVal <- checkBrackets (firstBr x) (firstBr y)
-      sndVal <- checkBrackets (secondBr x) (secondBr y)
+      fstVal <- checkBrackets (firstBracket x) (firstBracket y)
+      sndVal <- checkBrackets (secondBracket x) (secondBracket y)
       if fstVal || sndVal then
         return True
       else do
@@ -279,22 +324,9 @@ checkBrackets :: Maybe Bracket -> Maybe Bracket -> IO Bool
 checkBrackets (Just (R a)) (Just (R b)) = return $ a /= b
 checkBrackets _          _              = return False
 
+-- | Nice output for conflict of transitions
 printConflictWith :: Transition -> Transition -> IO ()
 printConflictWith x y = putStrLn $ "Conflict: " ++ showTrans x ++ " with " ++ showTrans y
-
--- =====================
--- | Sequence analysis |
--- =====================
-
-{-data Path = Path
-  { pathStates  :: [State]
-  , firstStack  :: [Bracket]
-  , secondStack :: [Bracket]
-  } deriving (Eq, Show)
-
-analyzeSequence :: String -> Lgraph -> [Path]
-analyzeSequence [] _     = []
-analyzeSequence (c:[]) g = filter (analyzeChar c) (transitions g)-}
 
 -- ===========================
 -- | Is the L-graph regular? |
@@ -315,14 +347,14 @@ isTransitionRegular t = do
 
 hasFirstBracket :: Transition -> IO Bool
 hasFirstBracket t
-  | firstBr t == Nothing = return False
+  | firstBracket t == Nothing = return False
   | otherwise            = do
     putStrLn $ showTrans t ++ " has a first bracket"
     return True
 
 hasSecondBracket :: Transition -> IO Bool
 hasSecondBracket t
-  | secondBr t == Nothing = return False
+  | secondBracket t == Nothing = return False
   | otherwise             = do
     putStrLn $ showTrans t ++ " has a second bracket"
     return True
@@ -342,3 +374,167 @@ isTransitionCF :: Transition -> IO Bool
 isTransitionCF t = do
   hasSecond <- hasSecondBracket t
   return $ not hasSecond
+
+-- =========================
+-- | Delete useless states |
+-- =========================
+
+deleteUselessStates :: Lgraph -> IO Lgraph
+deleteUselessStates g = do
+  g1 <- deleteNonGeneratingStates g
+  g2 <- deleteUnreachableStates g1
+  return g2
+
+deleteNonGeneratingStates :: Lgraph -> IO Lgraph
+deleteNonGeneratingStates g = return g
+
+deleteUnreachableStates :: Lgraph -> IO Lgraph
+deleteUnreachableStates g = return g
+
+-- =====================
+-- | Sequence analyzer |
+-- =====================
+
+data Analyzer = Analyzer
+  { lgraph       :: Lgraph
+  , currentState :: State
+  , path         :: [State]
+  , firstStack   :: [Bracket]
+  , secondStack  :: [Bracket]
+  } deriving (Eq, Show)
+
+-- | Print current path of analyzing sequence on L-graph
+printPath :: Analyzer -> IO ()
+printPath analyzer = putStrLn $ showPath $ path analyzer
+
+-- | Nice output for path :)
+showPath :: [Char] -> String
+showPath [x] = "(" ++ [x] ++ ")"
+showPath (x:xs) = "(" ++ [x] ++ ") -> " ++ showPath xs
+
+-- | Analyze sequence by all (determinde) analyzers
+analyzeSequenceByAnalyzers :: [Char] -> [Analyzer] -> IO Bool
+analyzeSequenceByAnalyzers sequence as =
+  orIO $ map (analyzeSequenceByAnalyzer sequence) as
+
+-- | Analyze sequence by (determined) analyzer
+analyzeSequenceByAnalyzer :: [Char] -> Analyzer -> IO Bool
+analyzeSequenceByAnalyzer [] analyzer
+  | currentState analyzer `elem` (finalStates.lgraph) analyzer
+    && firstStack analyzer == [] && secondStack analyzer == []
+    = do
+      printPath analyzer
+      return True
+  | firstStack analyzer == [] && secondStack analyzer == [] = return False
+  | otherwise = do
+    (res,updatedAnalyzer) <- analyzeBrackets analyzer
+    if res
+      then analyzeSequenceByAnalyzer [] updatedAnalyzer
+      else return False
+analyzeSequenceByAnalyzer (c:sequence) analyzer = do
+  (res1,updatedAnalyzer1) <- analyzeSymbol analyzer c
+  if res1
+    then analyzeSequenceByAnalyzer sequence updatedAnalyzer1
+    else do
+      (res2,updatedAnalyzer2) <- analyzeBrackets analyzer
+      if res2
+        then analyzeSequenceByAnalyzer (c:sequence) updatedAnalyzer2
+        else return False
+
+-- | Analyze one symbol with brackets by (determined) L-graph and return new state of analyzer
+analyzeSymbol :: Analyzer -> Char -> IO (Bool, Analyzer)
+analyzeSymbol analyzer c = do
+  likelyTransitions <- return $ filter
+    (transitionFromStateWithSymbol (currentState analyzer) c)
+    (transitions $ lgraph analyzer)
+  case (findTransitionNeededFor analyzer) likelyTransitions of
+    Nothing -> return (False, analyzer)
+    Just t  -> return (True, analyzer
+      { currentState = newState t
+      , path         = path analyzer ++ [newState t]
+      , firstStack   = updateStackWithBracket (firstStack analyzer) (firstBracket t)
+      , secondStack  = updateStackWithBracket (secondStack analyzer) (secondBracket t)
+      })
+
+-- | Analyze only brackets without symbol by (determined) L-graph and return new state of analyzer
+analyzeBrackets :: Analyzer -> IO (Bool, Analyzer)
+analyzeBrackets analyzer = do
+  likelyTransitions <- return $ filter
+    (transitionFromStateWithoutSymbol (currentState analyzer))
+    (transitions $ lgraph analyzer)
+  case (findTransitionNeededFor analyzer) likelyTransitions of
+    Nothing -> return (False, analyzer)
+    Just t  -> return (True, analyzer
+      { currentState = newState t
+      , path         = path analyzer ++ [newState t]
+      , firstStack   = updateStackWithBracket (firstStack analyzer) (firstBracket t)
+      , secondStack  = updateStackWithBracket (secondStack analyzer) (secondBracket t)
+      })
+
+-- | Check transition by start state and symbol mark
+transitionFromStateWithSymbol :: State -> Char -> Transition -> Bool
+transitionFromStateWithSymbol state c t =
+  (oldState t) == state && (symbol t) == (Just c)
+
+-- | Check transition by start state and abscence of symbol
+transitionFromStateWithoutSymbol :: State -> Transition -> Bool
+transitionFromStateWithoutSymbol state t =
+  (oldState t) == state && (symbol t) == Nothing
+
+-- | Find correct for analyzer transition
+findTransitionNeededFor :: Analyzer -> [Transition] -> Maybe Transition
+findTransitionNeededFor analyzer ts =
+  find (checkStacksWithTransition analyzer) ts
+
+-- | Check transition brackets for analyzer
+checkStacksWithTransition ::  Analyzer -> Transition -> Bool
+checkStacksWithTransition analyzer t =
+  checkFirstStack analyzer t && checkSecondStack analyzer t
+
+-- | Check first transition brackets for analyzer
+checkFirstStack :: Analyzer -> Transition -> Bool
+checkFirstStack analyzer t = case firstBracket t of
+  Nothing    -> True
+  Just (L _) -> True
+  Just (R i) -> case firstStack analyzer of
+    (L i):_ -> True
+    _       -> False
+
+-- | Check second transition brackets for analyzer
+checkSecondStack :: Analyzer -> Transition -> Bool
+checkSecondStack analyzer t = case secondBracket t of
+  Nothing    -> True
+  Just (L _) -> True
+  Just (R i) -> case secondStack analyzer of
+    (L i):_ -> True
+    _       -> False
+
+-- | Update analyzer stack by bracket mark
+updateStackWithBracket :: [Bracket] -> Maybe Bracket -> [Bracket]
+updateStackWithBracket [] bracket = case bracket of
+  Nothing    -> []
+  Just (L i) -> [L i]
+updateStackWithBracket ((L x):xs) bracket = case bracket of
+  Nothing -> ((L x):xs)
+  Just (L i) -> ((L i):(L x):xs)
+  Just (R x) -> xs
+
+-- | Make analyzers from all of beginning states
+mkAnalyzers :: Lgraph -> IO [Analyzer]
+mkAnalyzers graph = return $ map (mkAnalyzer graph) (beginStates graph)
+
+-- | Make analyzer from one of the beginning states
+mkAnalyzer :: Lgraph -> State -> Analyzer
+mkAnalyzer graph state = Analyzer
+  { lgraph       = graph
+  , currentState = state
+  , path         = [state]
+  , firstStack   = []
+  , secondStack  = []
+  }
+
+-- | Analyze sequence by L-graph
+analyzeSequenceByLgraph :: Lgraph -> [Char] -> IO Bool
+analyzeSequenceByLgraph graph sequence = do
+  as <- mkAnalyzers graph
+  analyzeSequenceByAnalyzers sequence as
