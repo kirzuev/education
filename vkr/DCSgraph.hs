@@ -1,4 +1,5 @@
 import Data.List
+import Data.Set (toList, fromList)
 
 data Lgraph = Lgraph
   { states      :: [State]
@@ -6,7 +7,16 @@ data Lgraph = Lgraph
   , beginStates :: [State]
   , finalStates :: [State]
   , transitions :: [Transition]
-  } deriving (Eq, Show)
+  } deriving (Eq)
+
+instance Show Lgraph where
+  show g = "L-graph: {" ++ 
+    "\n  states: {"  ++ states g ++ "}" ++
+    "\n  symbols: {" ++ symbols g ++ "}" ++
+    "\n  beginStates: {" ++ beginStates g ++ "}" ++
+    "\n  finalStates: {" ++ finalStates g ++ "}" ++
+    "\n  transitions: " ++ show (transitions g) ++
+    "\n}"
 
 data Bracket = L Int | R Int -- ^ Left/Right bracket with index
   deriving (Eq, Show)
@@ -14,12 +24,31 @@ data Bracket = L Int | R Int -- ^ Left/Right bracket with index
 type State = Char
 
 data Transition = Transition
-  { oldState :: State
-  , symbol   :: Maybe Char
+  { oldState      :: State
+  , symbol        :: Maybe Char
   , firstBracket  :: Maybe Bracket
   , secondBracket :: Maybe Bracket
-  , newState :: State
-  } deriving (Eq, Show)
+  , newState      :: State
+  } deriving (Eq)
+
+instance Show Transition where
+  show t = [oldState t] ++ " --{ " ++ stateMark ++ " }-> " ++ [newState t]
+    where
+      stateMark  = mark ++ " : " ++ fstBr ++ " : " ++ sndBr
+      mark  = case symbol t of
+        Nothing    -> "e"
+        Just x     -> [x]
+      fstBr = case firstBracket t of
+        Nothing    -> "e"
+        Just (L x) -> "(_" ++ show x
+        Just (R x) -> ")_" ++ show x
+      sndBr = case secondBracket t of
+        Nothing    -> "e"
+        Just (L x) -> "[_" ++ show x
+        Just (R x) -> "]_" ++ show x
+
+mkSet :: Ord a => [a] -> [a]
+mkSet = toList . fromList
 
 test1 :: Lgraph
 test1 = Lgraph
@@ -211,6 +240,82 @@ test5 = Lgraph
       , newState      = 'B'
       }
 
+test6 :: Lgraph
+test6 = Lgraph
+  { states      = ['A', 'B', 'C']
+  , symbols     = ['a', 'b']
+  , beginStates = ['A']
+  , finalStates = ['B']
+  , transitions = [l1, l2, l3, l4]
+  }
+  where
+    l1 = Transition
+      { oldState      = 'A'
+      , symbol        = Just 'a'
+      , firstBracket  = Just (R 1)
+      , secondBracket = Just (R 1)
+      , newState      = 'A'
+      }
+    l2 = Transition
+      { oldState      = 'A'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 1)
+      , secondBracket = Nothing
+      , newState      = 'B'
+      }
+    l3 = Transition
+      { oldState      = 'C'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 1)
+      , secondBracket = Nothing
+      , newState      = 'A'
+      }
+    l4 = Transition
+      { oldState      = 'B'
+      , symbol        = Nothing
+      , firstBracket  = Just (R 1)
+      , secondBracket = Nothing
+      , newState      = 'B'
+      }
+
+test7 :: Lgraph
+test7 = Lgraph
+  { states      = ['A', 'B', 'C', 'D']
+  , symbols     = ['a', 'b']
+  , beginStates = ['A']
+  , finalStates = ['B']
+  , transitions = [l1, l2, l3, l4]
+  }
+  where
+    l1 = Transition
+      { oldState      = 'A'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 1)
+      , secondBracket = Nothing
+      , newState      = 'D'
+      }
+    l2 = Transition
+      { oldState      = 'A'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 1)
+      , secondBracket = Nothing
+      , newState      = 'B'
+      }
+    l3 = Transition
+      { oldState      = 'C'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 1)
+      , secondBracket = Nothing
+      , newState      = 'D'
+      }
+    l4 = Transition
+      { oldState      = 'B'
+      , symbol        = Nothing
+      , firstBracket  = Just (R 1)
+      , secondBracket = Nothing
+      , newState      = 'B'
+      }
+
 -- =====================
 -- | Determine L-graph |
 -- =====================
@@ -279,22 +384,6 @@ mkPairs (t:ts) = mkPairsWith t ts ++ mkPairs ts
 mkPairsWith :: Transition -> [Transition] -> [(Transition, Transition)]
 mkPairsWith t = map (\x -> (t,x))
 
-showTrans :: Transition -> String
-showTrans t = [oldState t] ++ " --{ " ++ stateMark ++ " }-> " ++ [newState t]
-  where
-    stateMark  = mark ++ " : " ++ fstBr ++ " : " ++ sndBr
-    mark  = case symbol t of
-      Nothing    -> "e"
-      Just x     -> [x]
-    fstBr = case firstBracket t of
-      Nothing    -> "e"
-      Just (L x) -> "(_" ++ show x
-      Just (R x) -> ")_" ++ show x
-    sndBr = case secondBracket t of
-      Nothing    -> "e"
-      Just (L x) -> "[_" ++ show x
-      Just (R x) -> "]_" ++ show x
-
 -- | Check for the determined transition from one state for two transitions
 simpleTrans :: (Transition, Transition) -> IO Bool
 simpleTrans (x, y) = case (symbol x, symbol y) of
@@ -326,7 +415,7 @@ checkBrackets _          _              = return False
 
 -- | Nice output for conflict of transitions
 printConflictWith :: Transition -> Transition -> IO ()
-printConflictWith x y = putStrLn $ "Conflict: " ++ showTrans x ++ " with " ++ showTrans y
+printConflictWith x y = putStrLn $ "Conflict: " ++ show x ++ " with " ++ show y
 
 -- ===========================
 -- | Is the L-graph regular? |
@@ -349,14 +438,14 @@ hasFirstBracket :: Transition -> IO Bool
 hasFirstBracket t
   | firstBracket t == Nothing = return False
   | otherwise            = do
-    putStrLn $ showTrans t ++ " has a first bracket"
+    putStrLn $ show t ++ " has a first bracket"
     return True
 
 hasSecondBracket :: Transition -> IO Bool
 hasSecondBracket t
   | secondBracket t == Nothing = return False
   | otherwise             = do
-    putStrLn $ showTrans t ++ " has a second bracket"
+    putStrLn $ show t ++ " has a second bracket"
     return True
 
 -- ============================
@@ -379,17 +468,65 @@ isTransitionCF t = do
 -- | Delete useless states |
 -- =========================
 
+-- | Delete useless states and transitions with these states from L-graph
 deleteUselessStates :: Lgraph -> IO Lgraph
 deleteUselessStates g = do
   g1 <- deleteNonGeneratingStates g
   g2 <- deleteUnreachableStates g1
   return g2
 
+-- | Delete non generating states and transitions with these states from L-graph
 deleteNonGeneratingStates :: Lgraph -> IO Lgraph
-deleteNonGeneratingStates g = return g
+deleteNonGeneratingStates g = do
+  genStates      <- generatingStates g (finalStates g)
+  genTransitions <- transitionsWithStates g genStates
+  return g
+    { states      = genStates
+    , transitions = genTransitions
+    }
 
+-- | Delete unreacheble states and transitions with these states from L-graph
 deleteUnreachableStates :: Lgraph -> IO Lgraph
-deleteUnreachableStates g = return g
+deleteUnreachableStates g = do
+  reachStates      <- reachebleStates g (beginStates g)
+  reachTransitions <- transitionsWithStates g reachStates
+  return g
+    { states      = reachStates
+    , transitions = reachTransitions
+    }
+
+-- | Get only generating states from L-graph
+generatingStates :: Lgraph -> [State] -> IO [State]
+generatingStates g xs = do
+  oldGenStates <- return $ fromList xs
+  newGenStates <- return $ fromList $ concat $ map (generatedByStates g) xs
+  if oldGenStates == newGenStates
+    then return (toList oldGenStates)
+    else generatingStates g (toList newGenStates)
+
+-- | Get states generating the input state
+generatedByStates :: Lgraph -> State -> [State]
+generatedByStates g st =
+  map oldState $ filter (\t -> newState t == st) (transitions g)
+
+-- | Get only reachable states from L-graph
+reachebleStates :: Lgraph -> [State] -> IO [State]
+reachebleStates g xs = do
+  oldReachStates <- return $ fromList xs
+  newReachStates <- return $ fromList $ concat $ map (reachedFromStates g) xs
+  if oldReachStates == newReachStates
+    then return (toList oldReachStates)
+    else reachebleStates g (toList newReachStates)
+
+-- | Get states reached from input state
+reachedFromStates :: Lgraph -> State -> [State]
+reachedFromStates g st = [st] ++
+  (map newState $ filter (\t -> oldState t == st) (transitions g))
+
+-- | Get L-graph transitions filtering initiated by input states
+transitionsWithStates :: Lgraph -> [State] -> IO [Transition]
+transitionsWithStates g xs = return $
+  filter (\t -> newState t `elem` xs && oldState t `elem` xs ) (transitions g)
 
 -- =====================
 -- | Sequence analyzer |
@@ -534,7 +671,7 @@ mkAnalyzer graph state = Analyzer
   }
 
 -- | Analyze sequence by L-graph
-analyzeSequenceByLgraph :: Lgraph -> [Char] -> IO Bool
-analyzeSequenceByLgraph graph sequence = do
+analyzeSequenceByDeterminedLgraph :: Lgraph -> [Char] -> IO Bool
+analyzeSequenceByDeterminedLgraph graph sequence = do
   as <- mkAnalyzers graph
   analyzeSequenceByAnalyzers sequence as
