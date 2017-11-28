@@ -50,6 +50,51 @@ instance Show Transition where
 mkSet :: Ord a => [a] -> [a]
 mkSet = toList . fromList
 
+testGraph :: Lgraph
+testGraph = Lgraph
+  { states      = ['1', '2', '3']
+  , symbols     = ['a', 'b', 'c']
+  , beginStates = ['1']
+  , finalStates = ['3']
+  , transitions  = [l1, l2, l3, l4, l5]
+  }
+  where
+    l1 = Transition
+      { oldState      = '1'
+      , symbol        = Just 'a'
+      , firstBracket  = Nothing
+      , secondBracket = Just (L 1)
+      , newState      = '1'
+      }
+    l2 = Transition
+      { oldState      = '1'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 1)
+      , secondBracket = Just (R 1)
+      , newState      = '2'
+      }
+    l3 = Transition
+      { oldState      = '2'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 1)
+      , secondBracket = Just (R 1)
+      , newState      = '2'
+      }
+    l4 = Transition
+      { oldState      = '2'
+      , symbol        = Just 'c'
+      , firstBracket  = Just (R 1)
+      , secondBracket = Nothing
+      , newState      = '3'
+      }
+    l5 = Transition
+      { oldState      = '3'
+      , symbol        = Just 'c'
+      , firstBracket  = Just (R 1)
+      , secondBracket = Nothing
+      , newState      = '3'
+      }
+
 test1 :: Lgraph
 test1 = Lgraph
   { states      = ['A', 'B']
@@ -673,5 +718,10 @@ mkAnalyzer graph state = Analyzer
 -- | Analyze sequence by L-graph
 analyzeSequenceByDeterminedLgraph :: Lgraph -> [Char] -> IO Bool
 analyzeSequenceByDeterminedLgraph graph sequence = do
-  as <- mkAnalyzers graph
-  analyzeSequenceByAnalyzers sequence as
+  isDetermined <- isLgraphDetermined graph
+  if isDetermined then do
+    as <- mkAnalyzers graph
+    analyzeSequenceByAnalyzers sequence as
+  else do
+    putStrLn "Error: L-graph is not determined!"
+    return False
