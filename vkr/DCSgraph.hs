@@ -18,6 +18,7 @@ instance Show Lgraph where
     "\n  transitions: " ++ show (transitions g) ++
     "\n}"
 
+-- | Show a list like a set without brackets
 showSet :: [Char] -> String
 showSet []      = ""
 showSet (c:[])  = [c]
@@ -52,8 +53,9 @@ instance Show Transition where
         Just (L x) -> "[_" ++ show x
         Just (R x) -> "]_" ++ show x
 
-mkSet :: Ord a => [a] -> [a]
-mkSet = toList . fromList
+-- =================
+-- | Test L-graphs |
+-- =================
 
 testGraph :: Lgraph
 testGraph = Lgraph
@@ -503,6 +505,7 @@ isLgraphDetermined g = andIO $ map isStateDetermined $ states g
     isStateDetermined s =
       andIO $ map simpleTrans $ mkPairs $ takeTransitionsWithState s $ transitions g
 
+-- | Logical 'and' for a list in IO monad
 andIO :: [IO Bool] -> IO Bool
 andIO [] = return True
 andIO (x:xs) = do
@@ -510,6 +513,7 @@ andIO (x:xs) = do
   vals <- andIO xs
   return $ val && vals
 
+-- | Logical 'or' for a list in IO monad
 orIO :: [IO Bool] -> IO Bool
 orIO [] = return False
 orIO (x:xs) = do
@@ -575,12 +579,14 @@ isLgraphRegular g = andIO $ map hasRegularTransitions $ states g
     hasRegularTransitions s =
       andIO $ map isTransitionRegular $ takeTransitionsWithState s $ transitions g
 
+-- | The transition has not any brackets
 isTransitionRegular :: Transition -> IO Bool
 isTransitionRegular t = do
   hasFirst  <- hasFirstBracket t
   hasSecond <- hasSecondBracket t
   return $ not (hasFirst || hasSecond)
 
+-- | The transition has a first bracket
 hasFirstBracket :: Transition -> IO Bool
 hasFirstBracket t
   | firstBracket t == Nothing = return False
@@ -588,6 +594,7 @@ hasFirstBracket t
     putStrLn $ show t ++ " has a first bracket"
     return True
 
+-- | The transition has a second bracket
 hasSecondBracket :: Transition -> IO Bool
 hasSecondBracket t
   | secondBracket t == Nothing = return False
@@ -606,6 +613,7 @@ isLgraphCF g = andIO $ map hasCFTransitions $ states g
     hasCFTransitions s =
       andIO $ map isTransitionCF $ takeTransitionsWithState s $ transitions g
 
+-- | The transition has not a second bracket
 isTransitionCF :: Transition -> IO Bool
 isTransitionCF t = do
   hasSecond <- hasSecondBracket t
@@ -627,7 +635,7 @@ isLgraphCS g = do
     hasCSTransitionsBySecondBrackets s =
       andIO $ map isLimitedBySecondBracket $ takeTransitionsWithState s $ transitions g
 
--- | Transition with left first bracket necessarily have a symbol
+-- | The transition with left first bracket necessarily have a symbol
 isLimitedByFirstBracket :: Transition -> IO Bool
 isLimitedByFirstBracket t = do
   case firstBracket t of
@@ -637,7 +645,7 @@ isLimitedByFirstBracket t = do
       Nothing -> return False
       Just _  -> return True
 
--- | Transition with left second bracket necessarily have a symbol
+-- | The transition with left second bracket necessarily have a symbol
 isLimitedBySecondBracket :: Transition -> IO Bool
 isLimitedBySecondBracket t = do
   case secondBracket t of
