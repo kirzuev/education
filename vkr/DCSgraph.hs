@@ -106,7 +106,7 @@ test1 = Lgraph
   , symbols     = ['a', 'b']
   , beginStates = ['A']
   , finalStates = ['B']
-  , transitions = [l1, l2, l3, l4]
+  , transitions = [l1, l2, l3, l4, l5]
   }
   where
     l1 = Transition
@@ -135,6 +135,13 @@ test1 = Lgraph
       , symbol        = Just 'a'
       , firstBracket  = Just (R 1)
       , secondBracket = Just (R 1)
+      , newState      = 'B'
+      }
+    l5 = Transition
+      { oldState      = 'B'
+      , symbol        = Nothing
+      , firstBracket  = Just (L 1)
+      , secondBracket = Just (L 1)
       , newState      = 'B'
       }
 
@@ -366,6 +373,96 @@ test7 = Lgraph
       , newState      = 'B'
       }
 
+test8 :: Lgraph
+test8 = Lgraph
+  { states      = ['A', 'B']
+  , symbols     = ['a', 'b']
+  , beginStates = ['A']
+  , finalStates = ['B']
+  , transitions = [l1, l2, l3, l4, l5]
+  }
+  where
+    l1 = Transition
+      { oldState      = 'A'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 1)
+      , secondBracket = Just (L 1)
+      , newState      = 'A'
+      }
+    l2 = Transition
+      { oldState      = 'A'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 2)
+      , secondBracket = Just (L 1)
+      , newState      = 'B'
+      }
+    l3 = Transition
+      { oldState      = 'B'
+      , symbol        = Just 'a'
+      , firstBracket  = Just (R 1)
+      , secondBracket = Just (R 1)
+      , newState      = 'A'
+      }
+    l4 = Transition
+      { oldState      = 'B'
+      , symbol        = Just 'a'
+      , firstBracket  = Just (R 1)
+      , secondBracket = Just (R 1)
+      , newState      = 'B'
+      }
+    l5 = Transition
+      { oldState      = 'B'
+      , symbol        = Nothing
+      , firstBracket  = Just (R 1)
+      , secondBracket = Just (L 1)
+      , newState      = 'B'
+      }
+
+test9 :: Lgraph
+test9 = Lgraph
+  { states      = ['A', 'B']
+  , symbols     = ['a', 'b']
+  , beginStates = ['A']
+  , finalStates = ['B']
+  , transitions = [l1, l2, l3, l4, l5]
+  }
+  where
+    l1 = Transition
+      { oldState      = 'A'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 1)
+      , secondBracket = Just (L 1)
+      , newState      = 'A'
+      }
+    l2 = Transition
+      { oldState      = 'A'
+      , symbol        = Just 'b'
+      , firstBracket  = Just (L 2)
+      , secondBracket = Just (L 1)
+      , newState      = 'B'
+      }
+    l3 = Transition
+      { oldState      = 'B'
+      , symbol        = Just 'a'
+      , firstBracket  = Just (R 1)
+      , secondBracket = Just (R 1)
+      , newState      = 'A'
+      }
+    l4 = Transition
+      { oldState      = 'B'
+      , symbol        = Just 'a'
+      , firstBracket  = Just (R 1)
+      , secondBracket = Just (R 1)
+      , newState      = 'B'
+      }
+    l5 = Transition
+      { oldState      = 'B'
+      , symbol        = Nothing
+      , firstBracket  = Just (L 1)
+      , secondBracket = Just (R 1)
+      , newState      = 'B'
+      }
+
 -- =====================
 -- | Determine L-graph |
 -- =====================
@@ -513,6 +610,42 @@ isTransitionCF :: Transition -> IO Bool
 isTransitionCF t = do
   hasSecond <- hasSecondBracket t
   return $ not hasSecond
+
+-- ============================
+-- | Is L-graph context free? |
+-- ============================
+
+-- | Is the L-graph context sensitive?
+isLgraphCS :: Lgraph -> IO Bool
+isLgraphCS g = do
+  firstBracketLimit  <- andIO $ map hasCSTransitionsByFirstBrackets $ states g
+  secondBracketLimit <- andIO $ map hasCSTransitionsBySecondBrackets $ states g
+  return (firstBracketLimit || secondBracketLimit)
+  where
+    hasCSTransitionsByFirstBrackets s =
+      andIO $ map isLimitedByFirstBracket $ takeTransitionsWithState s $ transitions g
+    hasCSTransitionsBySecondBrackets s =
+      andIO $ map isLimitedBySecondBracket $ takeTransitionsWithState s $ transitions g
+
+-- | Transition with left first bracket necessarily have a symbol
+isLimitedByFirstBracket :: Transition -> IO Bool
+isLimitedByFirstBracket t = do
+  case firstBracket t of
+    Nothing    -> return True
+    Just (R _) -> return True
+    Just (L _) -> case symbol t of
+      Nothing -> return False
+      Just _  -> return True
+
+-- | Transition with left second bracket necessarily have a symbol
+isLimitedBySecondBracket :: Transition -> IO Bool
+isLimitedBySecondBracket t = do
+  case secondBracket t of
+    Nothing -> return True
+    Just (R _) -> return True
+    Just (L _) -> case symbol t of
+      Nothing -> return False
+      Just _  -> return True
 
 -- =========================
 -- | Delete useless states |
