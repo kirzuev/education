@@ -11,12 +11,17 @@ data Lgraph = Lgraph
 
 instance Show Lgraph where
   show g = "L-graph: {" ++ 
-    "\n  states: {"  ++ states g ++ "}" ++
-    "\n  symbols: {" ++ symbols g ++ "}" ++
-    "\n  beginStates: {" ++ beginStates g ++ "}" ++
-    "\n  finalStates: {" ++ finalStates g ++ "}" ++
+    "\n  states: {"  ++ showSet (states g) ++ "}" ++
+    "\n  symbols: {" ++ showSet (symbols g) ++ "}" ++
+    "\n  beginStates: {" ++ showSet (beginStates g) ++ "}" ++
+    "\n  finalStates: {" ++ showSet (finalStates g) ++ "}" ++
     "\n  transitions: " ++ show (transitions g) ++
     "\n}"
+
+showSet :: [Char] -> String
+showSet []      = ""
+showSet (c:[])  = [c]
+showSet (c:str) = [c] ++ ", " ++ showSet str
 
 data Bracket = L Int | R Int -- ^ Left/Right bracket with index
   deriving (Eq, Show)
@@ -32,7 +37,7 @@ data Transition = Transition
   } deriving (Eq)
 
 instance Show Transition where
-  show t = [oldState t] ++ " --{ " ++ stateMark ++ " }-> " ++ [newState t]
+  show t = "\n    " ++ [oldState t] ++ " --{ " ++ stateMark ++ " }-> " ++ [newState t]
     where
       stateMark  = mark ++ " : " ++ fstBr ++ " : " ++ sndBr
       mark  = case symbol t of
@@ -460,7 +465,7 @@ checkBrackets _          _              = return False
 
 -- | Nice output for conflict of transitions
 printConflictWith :: Transition -> Transition -> IO ()
-printConflictWith x y = putStrLn $ "Conflict: " ++ show x ++ " with " ++ show y
+printConflictWith x y = putStrLn $ "Conflict: " ++ show x ++ "\n    with" ++ show y
 
 -- ===========================
 -- | Is the L-graph regular? |
