@@ -21,6 +21,7 @@ library
     , miso
     , containers
     , extra
+    , random
   exposed-modules:
       Bank
       Model
