@@ -112,8 +112,8 @@ addToQueue reqs ex = newExperiment
     comingClients       = filter inTime reqs
     notComingClientsNum = length reqs - length comingClients
     newLeftClientsNum   = leftClientsNum (statistic newExperiment) + notComingClientsNum
-    inTime (Request _ _ _ dur_) =
-      isWorkingTime (spentDays (statistic ex)) (dur_ + currentTime (statistic ex))
+    inTime (Request _ _ _ dur_) = isWorkingTime
+      (spentDays (statistic ex)) (dur_ + currentTime (statistic ex))
 
 leftFromQueue :: Experiment -> Experiment
 leftFromQueue ex = ex 
@@ -129,8 +129,8 @@ leftFromQueue ex = ex
     leftClients       = filter isLeft (queue (bank ex))
     notLeft client    = not (client `elem` leftClients)
     newLeftClientsNum = leftClientsNum (statistic ex) + length leftClients
-    isLeft (Client (Request _ _ _ dur_) _ _) = not $
-      isWorkingTime (spentDays (statistic ex)) (dur_ + currentTime (statistic ex))
+    isLeft (Client (Request _ _ _ dur_) _ _) = not $ isWorkingTime
+      (spentDays (statistic ex)) (dur_ + currentTime (statistic ex))
 
 setWorkToClerks :: Experiment -> Experiment
 setWorkToClerks ex = ex
@@ -146,29 +146,49 @@ setWorkToClerks ex = ex
   where
     freeClerks    = filter withoutWork (clerks (bank ex))
     readyClients  = take (length freeClerks) (queue (bank ex))
-    updatedClerks = zipWith takeClientToClerk readyClients freeClerks
+    changedClerks = zipWith takeClientToClerk readyClients freeClerks
     newClerks     = setWork <$> clerks (bank ex)
     setWork clerk =
-      case find (\clerk_ -> name clerk_ == name clerk) updatedClerks of
+      case find (\clerk_ -> name clerk_ == name clerk) changedClerks of
         Nothing  -> clerk
         Just new -> new
-    newInfoTable  = updateInfoTable updatedClerks (infoTable (bank ex))
+    newInfoTable  = updateInfoTable changedClerks (infoTable (bank ex))
     newQueue      = drop (length readyClients) (queue (bank ex))
 
 updateClients :: Experiment -> Experiment
-updateClients ex =
-  (addToQueue newClients $ leftFromQueue $ setWorkToClerks ex)
-    { newRequests = drop amount (newRequests ex)
+updateClients ex = newExperiment
+  { newRequests = drop amount (newRequests ex)
+  , bank        = (bank newExperiment)
+    { queue = addWaitTime <$> queue (bank newExperiment)
     }
+  }
   where
-    newClients = takeWhile isComing (newRequests ex)
-    amount     = length newClients
+    newExperiment = addToQueue newClients $ leftFromQueue $ setWorkToClerks ex
+    newClients    = takeWhile isComing (newRequests ex)
+    amount        = length newClients
     isComing (Request _ day_ time_ _) =
       day_ <= spentDays (statistic ex) && time_ <= currentTime (statistic ex)
 
+updateClerks :: Experiment -> Experiment
+updateClerks ex = ex
+  { bank = (bank ex)
+    { clerks    = serviceComplete <$> newClerks
+    , infoTable = newInfoTable
+    }
+  , statistic = (statistic ex)
+    { bankProfit = bankProfit (statistic ex) + newProfit
+    }
+  }
+  where
+    newClerks     = serviceTime <$> clerks (bank ex)
+    newProfit     = sum $ serviceProfit <$> newClerks
+    changedClerks = filter isServiced newClerks
+    newInfoTable  = updateInfoTable (serviceComplete <$> changedClerks)
+      (infoTable (bank ex))
+
 addTime :: Minutes -> Experiment -> Experiment
 addTime t ex
-  | t <= 0    = newExperiment
+  | t == 0    = ex
   | otherwise = addTime (t - 1) newExperiment
     { statistic = (statistic newExperiment)
       { spentDays   = newSpentDays
@@ -181,7 +201,7 @@ addTime t ex
     , isEnded = simulationIsEnded
     }
   where
-    newExperiment  = updateClients ex
+    newExperiment  = updateClients $ updateClerks ex
     daysChanges    = newTime `div` day
     newTime        = currentTime (statistic ex) + 1
     newSpentDays   = spentDays (statistic ex) + daysChanges
@@ -190,7 +210,7 @@ addTime t ex
         || currentDay (statistic ex) `elem` parttimeDays =
           daysChanges * sum (salary <$> (clerks (bank ex)))
       | otherwise = 0
-    newBankProfit  = bankProfit (statistic ex) - clerksSalaries
+    newBankProfit  = bankProfit (statistic newExperiment) - clerksSalaries
     newDay
       | daysChanges > 0 = addDays daysChanges (currentDay (statistic ex))
       | otherwise       = currentDay (statistic ex)
@@ -215,8 +235,8 @@ genNewRequests g params =
     durations     = randomRs (serviceMinTime params, serviceMaxTime params) g2
     (days, times) = unzip $ filter (\(d,t) -> isWorkingTime d t) $
       takeWhile (\(d,_) -> d < simulationPeriod params) $ genNewTime g3 params (0,0)
-    requestWillEnd (Request _ day_ time_ dur_) =
-      isWorkingTime (day_ + (time_ + dur_) `div` day) ((time_ + dur_) `mod` day)
+    requestWillEnd (Request _ day_ time_ dur_) = isWorkingTime
+      (day_ + (time_ + dur_) `div` day) ((time_ + dur_) `mod` day)
 
 genNewTime :: StdGen -> Parameters -> (Int, Minutes) -> [(Int, Minutes)]
 genNewTime g params (prevDay, prevTime) =
@@ -305,12 +325,30 @@ data Client = Client
   , number       :: Int
   } deriving (Eq)
 
+subtractDuration :: Client -> Client
+subtractDuration client = client
+  { request = (request client)
+    { duration = duration (request client) - 1
+    }
+  }
+
+completeService :: Maybe Client -> Maybe Client
+completeService (Just client)
+  | duration (request client) == 0 = Nothing
+  | otherwise                      = (Just client)
+completeService work_ = work_
+
+addWaitTime :: Client -> Client
+addWaitTime client = client
+  { waitTime = waitTime client + 1
+  }
+
 data Request = Request
   { profit       :: Money
   , dayToComing  :: Int
   , timeToComing :: Minutes
   , duration     :: Minutes
-  } deriving (Show, Eq)
+  } deriving (Eq)
 
 mkRequest :: Money -> Int -> Minutes -> Minutes -> Request
 mkRequest profit_ day_ time_ duration_ = Request
@@ -354,10 +392,27 @@ takeClientToClerk client clerk = clerk
   { work = Just client
   }
 
-endOfWork :: Clerk -> Clerk
-endOfWork clerk = clerk
-  { work = Nothing
+serviceTime :: Clerk -> Clerk
+serviceTime clerk = clerk
+  { work = subtractDuration <$> work clerk
   }
+
+serviceComplete :: Clerk -> Clerk
+serviceComplete clerk = clerk
+  { work = completeService (work clerk)
+  }
+
+isServiced :: Clerk -> Bool
+isServiced clerk = case work clerk of
+  Nothing      -> False
+  Just client_ -> duration (request client_) == 0
+
+serviceProfit :: Clerk -> Money
+serviceProfit clerk = case work clerk of
+  Nothing -> 0
+  Just client
+    | duration (request client) == 0 -> profit (request client)
+    | otherwise                      -> 0
 
 withoutWork :: Clerk -> Bool
 withoutWork clerk = work clerk == Nothing

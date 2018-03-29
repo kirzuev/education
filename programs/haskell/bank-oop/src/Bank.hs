@@ -67,7 +67,7 @@ showMSDay d = case d of
   Sunday    -> "Вс."
 
 showMSMoney :: Money -> MisoString
-showMSMoney m = showMS (m * 1000) <> " руб."
+showMSMoney m = showMS m <> " тыс. руб."
 
 showMSInterval :: Show a => (a,a) -> MisoString
 showMSInterval (x,y) = showMS x <> " - " <> showMS y
@@ -87,8 +87,8 @@ viewExperiment ex =
 
     bankView =
       div_
-      [ {-activeStyle
-      ,-} bankStyle ]
+      [ activeStyle
+      , bankStyle ]
       [ clerksView
       , div_
         [ lineBlockStyle ]
@@ -616,12 +616,12 @@ viewExperiment ex =
 
     buttonStyle = style_ $ Map.fromList
       [ ("margin-right", "10px") ]
-{-
+
     activeStyle
       | isInitialized ex =
         style_ $ Map.fromList [ ("opacity", "1") ]
       | otherwise = style_ $ Map.fromList [ ("opacity", "0.3") ]
--}
+
     bankStyle = style_ $ Map.fromList
       [ ("width",      "900px")
       , ("margin-top", "20px") ]
