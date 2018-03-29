@@ -1,6 +1,7 @@
 module Model where
 
 import Data.List (find, zipWith4)
+import Data.Maybe (catMaybes)
 import System.Random
 
 data Experiment = Experiment
@@ -100,41 +101,100 @@ finishExperiment ex = addTime timeToEnd ex
     daysToEnd     = simulationPeriod (parameters ex) - spentDays (statistic ex) - 1
     timeToDaysEnd = 24 * hour - currentTime (statistic ex)
 
+addToQueue :: [Request] -> Experiment -> Experiment
+addToQueue reqs ex = newExperiment
+  { statistic = (statistic newExperiment)
+    { leftClientsNum = newLeftClientsNum
+    }
+  }
+  where
+    newExperiment       = addClients comingClients ex
+    comingClients       = filter inTime reqs
+    notComingClientsNum = length reqs - length comingClients
+    newLeftClientsNum   = leftClientsNum (statistic newExperiment) + notComingClientsNum
+    inTime (Request _ _ _ dur_) =
+      isWorkingTime (spentDays (statistic ex)) (dur_ + currentTime (statistic ex))
+
+leftFromQueue :: Experiment -> Experiment
+leftFromQueue ex = ex 
+  { bank = (bank ex)
+    { queue = newQueue
+    }
+  , statistic = (statistic ex)
+    { leftClientsNum = newLeftClientsNum
+    }
+  }
+  where
+    newQueue          = filter notLeft (queue (bank ex))
+    leftClients       = filter isLeft (queue (bank ex))
+    notLeft client    = not (client `elem` leftClients)
+    newLeftClientsNum = leftClientsNum (statistic ex) + length leftClients
+    isLeft (Client (Request _ _ _ dur_) _ _) = not $
+      isWorkingTime (spentDays (statistic ex)) (dur_ + currentTime (statistic ex))
+
+setWorkToClerks :: Experiment -> Experiment
+setWorkToClerks ex = ex
+  { bank = (bank ex)
+    { queue     = newQueue
+    , clerks    = newClerks
+    , infoTable = newInfoTable
+    }
+  , statistic = (statistic ex)
+    { servicedClientsNum = servicedClientsNum (statistic ex) + length readyClients
+    }
+  }
+  where
+    freeClerks    = filter withoutWork (clerks (bank ex))
+    readyClients  = take (length freeClerks) (queue (bank ex))
+    updatedClerks = zipWith takeClientToClerk readyClients freeClerks
+    newClerks     = setWork <$> clerks (bank ex)
+    setWork clerk =
+      case find (\clerk_ -> name clerk_ == name clerk) updatedClerks of
+        Nothing  -> clerk
+        Just new -> new
+    newInfoTable  = updateInfoTable updatedClerks (infoTable (bank ex))
+    newQueue      = drop (length readyClients) (queue (bank ex))
+
+updateClients :: Experiment -> Experiment
+updateClients ex =
+  (addToQueue newClients $ leftFromQueue $ setWorkToClerks ex)
+    { newRequests = drop amount (newRequests ex)
+    }
+  where
+    newClients = takeWhile isComing (newRequests ex)
+    amount     = length newClients
+    isComing (Request _ day_ time_ _) =
+      day_ <= spentDays (statistic ex) && time_ <= currentTime (statistic ex)
+
 addTime :: Minutes -> Experiment -> Experiment
 addTime t ex
-  | t <= 0    = ex
-  | otherwise = addTime (t - 1) ex
-    { statistic = (statistic ex)
+  | t <= 0    = newExperiment
+  | otherwise = addTime (t - 1) newExperiment
+    { statistic = (statistic newExperiment)
       { spentDays   = newSpentDays
       , currentDay  = newDay
       , currentTime = if simulationIsEnded
         then 0
         else newTime `mod` day
+      , bankProfit  = newBankProfit
       }
     , isEnded = simulationIsEnded
     }
   where
-    newSpentDays = spentDays (statistic ex) + daysChanges
-    daysChanges  = newTime `div` day
-    newTime      = currentTime (statistic ex) + 1
+    newExperiment  = updateClients ex
+    daysChanges    = newTime `div` day
+    newTime        = currentTime (statistic ex) + 1
+    newSpentDays   = spentDays (statistic ex) + daysChanges
+    clerksSalaries
+      | currentDay (statistic ex) `elem` fulltimeDays
+        || currentDay (statistic ex) `elem` parttimeDays =
+          daysChanges * sum (salary <$> (clerks (bank ex)))
+      | otherwise = 0
+    newBankProfit  = bankProfit (statistic ex) - clerksSalaries
     newDay
       | daysChanges > 0 = addDays daysChanges (currentDay (statistic ex))
       | otherwise       = currentDay (statistic ex)
     simulationIsEnded = newSpentDays >= simulationPeriod (parameters ex)
-
-isWorkingTime :: Experiment -> Bool
-isWorkingTime ex =
-  (day_ `elem` fulltimeDays) && (inFulltimeShedule time)
-  || (day_ `elem` parttimeDays) && (inParttimeShedule time)
-  where
-    day_  = currentDay  (statistic ex)
-    time = currentTime (statistic ex)
-    inFulltimeShedule t =
-      (t >= fst fulltimeWorkShedule) && (t <= snd fulltimeWorkShedule)
-      && (t <= fst fulltimeDinnerShedule) && (t >= snd fulltimeDinnerShedule)
-    inParttimeShedule t =
-      (t >= fst parttimeWorkShedule) && (t <= snd parttimeWorkShedule)
-      && (t <= fst parttimeDinnerShedule) && (t >= snd parttimeDinnerShedule)
 
 initClerks :: [Clerk]
 initClerks = take (fst defaultClerksNums) defaultClerks
@@ -146,14 +206,17 @@ initNewRequests :: RequestsQueue
 initNewRequests = []
 
 genNewRequests :: StdGen -> Parameters -> RequestsQueue
-genNewRequests g params = zipWith4 mkRequest profits days times durations
+genNewRequests g params =
+  filter requestWillEnd $ zipWith4 mkRequest profits days times durations
   where
     (g1, g')      = split g
     (g2, g3)      = split g'
     profits       = randomRs defaultProfitInterval g1
     durations     = randomRs (serviceMinTime params, serviceMaxTime params) g2
-    (days, times) = unzip $ takeWhile (\(d,_) -> d < simulationPeriod params) $
-      genNewTime g3 params (0,0)
+    (days, times) = unzip $ filter (\(d,t) -> isWorkingTime d t) $
+      takeWhile (\(d,_) -> d < simulationPeriod params) $ genNewTime g3 params (0,0)
+    requestWillEnd (Request _ day_ time_ dur_) =
+      isWorkingTime (day_ + (time_ + dur_) `div` day) ((time_ + dur_) `mod` day)
 
 genNewTime :: StdGen -> Parameters -> (Int, Minutes) -> [(Int, Minutes)]
 genNewTime g params (prevDay, prevTime) =
@@ -164,32 +227,31 @@ genNewTime g params (prevDay, prevTime) =
     currTime      = (prevTime + genTime) `mod` day
     newTime       = (currDay, currTime)
 
-addClient :: Request -> Experiment -> Experiment
-addClient req ex = ex
-  { bank = (bank ex)
-    { queue = queue (bank ex) ++ [client]
+addClients :: [Request] -> Experiment -> Experiment
+addClients [] ex = ex
+addClients (req : reqs) ex
+  | queueLen < limit = addClients reqs ex
+    { bank = (bank ex)
+      { queue = queue (bank ex) ++ [client]
+      }
     }
-  , statistic = (statistic ex)
-    { clientsCome = clientsCome (statistic ex) + 1
+  | otherwise = ex
+    { statistic = (statistic ex)
+      { leftClientsNum = newLeftClientsNum
+      }
     }
-  }
   where
-    client = Client
+    queueLen = length (queue (bank ex))
+    limit    = queueLenLimit (parameters ex)
+    client   = Client
       { request  = req
       , waitTime = 0
       , number   = head $ dropWhile (`elem` usedNumbers) defaultClientNumbers
       }
-    usedNumbers = number <$> queue (bank ex) 
+    usedNumbers       = (number <$> queue (bank ex))
+      ++ servicedClientNumbers (bank ex)
+    newLeftClientsNum = leftClientsNum (statistic ex) + length (req : reqs)
 
-leaveClient :: Client -> Experiment -> Experiment
-leaveClient client ex = ex
-  { bank = (bank ex)
-    { queue = filter (/= client) (queue (bank ex))
-    }
-  , statistic = (statistic ex)
-    { clientsLeft = clientsLeft (statistic ex) + 1
-    }
-  }
 
 data Bank = Bank
   { queue     :: ClientsQueue
@@ -203,21 +265,6 @@ initBank = Bank
   , infoTable = initInfoTable
   , clerks    = initClerks
   }
-
-setWorkToClerks :: Bank -> Bank
-setWorkToClerks bank_ = bank_
-  { clerks    = newClerks
-  , infoTable = newInfoTable
-  }
-  where
-    freeClerks    = filter withoutWork (clerks bank_)
-    readyClients  = take (length freeClerks) (queue bank_)
-    updatedClerks = zipWith takeClientToClerk readyClients freeClerks
-    newClerks     = setWork <$> clerks bank_
-    setWork clerk = case find (== clerk) updatedClerks of
-      Nothing  -> clerk
-      Just new -> new
-    newInfoTable  = updateInfoTable newClerks (infoTable bank_)
 
 delClient :: Client -> Bank -> Bank
 delClient client bank_ = bank_
@@ -246,6 +293,12 @@ delClerk bank_
     amount       = length (clerks bank_)
     deletedClerk = last   (clerks bank_)
 
+servicedClientNumbers :: Bank -> [Int]
+servicedClientNumbers bank_ =
+  number <$> catMaybes (work <$> busyClerks)
+  where
+    busyClerks = filter (\clerk_ -> work clerk_ /= Nothing) (clerks bank_)
+
 data Client = Client
   { request      :: Request
   , waitTime     :: Minutes
@@ -257,7 +310,7 @@ data Request = Request
   , dayToComing  :: Int
   , timeToComing :: Minutes
   , duration     :: Minutes
-  } deriving (Eq)
+  } deriving (Show, Eq)
 
 mkRequest :: Money -> Int -> Minutes -> Minutes -> Request
 mkRequest profit_ day_ time_ duration_ = Request
@@ -282,13 +335,13 @@ addTableLine clerk table = initTableLine clerk : table
 initTableLine :: Clerk -> TableLine
 initTableLine clerk = TableLine
   { tableClerk  = name clerk
-  , tableClient = Nothing
+  , tableClient = number <$> work clerk
   }
 
 updateInfoTable :: [Clerk] -> [TableLine] -> [TableLine]
 updateInfoTable [] table = table
 updateInfoTable (clerk : cs) table =
-  updateInfoTable cs $ addTableLine clerk $ delTableLine clerk table
+   addTableLine clerk $ delTableLine clerk $ updateInfoTable cs table
 
 data Clerk = Clerk
   { name   :: String
@@ -299,6 +352,11 @@ data Clerk = Clerk
 takeClientToClerk :: Client -> Clerk -> Clerk
 takeClientToClerk client clerk = clerk
   { work = Just client
+  }
+
+endOfWork :: Clerk -> Clerk
+endOfWork clerk = clerk
+  { work = Nothing
   }
 
 withoutWork :: Clerk -> Bool
@@ -339,8 +397,6 @@ data Statistic = Statistic
   , spentDays            :: Int
   , currentDay           :: Day
   , currentTime          :: Minutes
-  , clientsCome          :: Int
-  , clientsLeft          :: Int
   } deriving (Eq)
 
 initStatistic :: Statistic
@@ -356,8 +412,6 @@ initStatistic = Statistic
   , spentDays            = 0
   , currentDay           = head fulltimeDays
   , currentTime          = fst fulltimeWorkShedule
-  , clientsCome          = 0
-  , clientsLeft          = 0
   }
 
 type Minutes       = Int
@@ -368,6 +422,26 @@ type RequestsQueue = [Request]
 data Day
   = Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday
   deriving (Eq)
+
+isWorkingTime :: Int -> Minutes -> Bool
+isWorkingTime n time =
+  (day_ `elem` fulltimeDays) && (inFulltimeShedule time)
+  || (day_ `elem` parttimeDays) && (inParttimeShedule time)
+  where
+    day_ = case n `mod` 7 of
+      0 -> Monday
+      1 -> Tuesday
+      2 -> Wednesday
+      3 -> Thursday
+      4 -> Friday
+      5 -> Saturday
+      _ -> Sunday
+    inFulltimeShedule t =
+      (t >= fst fulltimeWorkShedule) && (t <= snd fulltimeWorkShedule)
+      && ((t <= fst fulltimeDinnerShedule) || (t >= snd fulltimeDinnerShedule))
+    inParttimeShedule t =
+      (t >= fst parttimeWorkShedule) && (t <= snd parttimeWorkShedule)
+      && ((t <= fst parttimeDinnerShedule) || (t >= snd parttimeDinnerShedule))
 
 addDays :: Int -> Day -> Day
 addDays 0 day_ = day_

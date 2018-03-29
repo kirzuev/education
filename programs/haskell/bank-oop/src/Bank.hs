@@ -93,7 +93,6 @@ viewExperiment ex =
       , div_
         [ lineBlockStyle ]
         [ queueView
-        , inOutStatsView
         ]
       , div_
         [ lineBlockStyle ]
@@ -113,32 +112,6 @@ viewExperiment ex =
       [ queueStyle
       , centerStyle ]
       (clientToDiv_ <$> queue (bank ex))
-
-    inOutStatsView =
-      div_
-      [ inOutStyle
-      , centerStyle ]
-      [ div_
-        [ lineBlockStyle
-        , centerStyle ]
-        [ div_
-          [ labelStyle ]
-          [ text "Пришло:" ]
-        , div_
-          []
-          [ text $ ms $ show $ clientsCome (statistic ex) ]
-        ]
-      , div_
-        [ lineBlockStyle
-        , centerStyle ]
-        [ div_
-          [ labelStyle ]
-          [ text "Ушло:" ]
-        , div_
-          []
-          [ text $ ms $ show $ clientsLeft (statistic ex) ]
-        ]
-      ]
 
     sheduleView =
       div_
@@ -612,17 +585,6 @@ viewExperiment ex =
       , ("flex-wrap",        "wrap")
       , ("align-items",      "center")
       , ("width",            "700px") ]
-
-    inOutStyle = style_ $ Map.fromList
-      [ ("display",         "flex")
-      , ("border-style",    "solid")
-      , ("border-color",    "gray")
-      , ("border-radius",   "2px") 
-      , ("border-width",    "2px")
-      , ("height",          "200px")
-      , ("width",           "150px")
-      , ("flex-direction",  "column")
-      , ("justify-content", "space-around") ]
 
     sheduleStyle = style_ $ Map.fromList
       [ ("display",          "flex")
