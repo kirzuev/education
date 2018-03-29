@@ -735,6 +735,7 @@ viewExperiment ex =
     comingMaxTimeParameterSubStyle
       | comingMaxTime (parameters ex) == fst defaultComingTimes
         || comingMaxTime (parameters ex) <= comingMinTime (parameters ex)
+        || comingMaxTime (parameters ex) <= 2
         || isInitialized ex = disabled_ True
       | otherwise           = disabled_ False
 
