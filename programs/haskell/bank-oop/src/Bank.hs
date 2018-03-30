@@ -146,11 +146,6 @@ viewExperiment ex =
       , currentDayView
       , servicedClientsNumView
       , leftClientsNumView
-      , minQueueLenView
-      , medQueueLenView
-      , maxQueueLenView
-      , medClientWaitingTimeView
-      , medClerksWorkTimeView
       , bankProfitView
       ]
 
@@ -212,66 +207,6 @@ viewExperiment ex =
       , div_
         []
         [ text $ showMS (leftClientsNum $ statistic ex) ]
-      ]
-
-    minQueueLenView =
-      div_
-      [ lineBlockStyle
-      , textLineStyle ]
-      [ div_
-        [ labelStyle ]
-        [ text "Минимальная длина очереди: " ]
-      , div_
-        []
-        [ text $ showMS (minQueueLen $ statistic ex) ]
-      ]
-
-    medQueueLenView =
-      div_
-      [ lineBlockStyle
-      , textLineStyle ]
-      [ div_
-        [ labelStyle ]
-        [ text "Средняя длина очереди: " ]
-      , div_
-        []
-        [ text $ showMS (medQueueLen $ statistic ex) ]
-      ]
-
-    maxQueueLenView =
-      div_
-      [ lineBlockStyle
-      , textLineStyle ]
-      [ div_
-        [ labelStyle ]
-        [ text "Максимальная длина очереди: " ]
-      , div_
-        []
-        [ text $ showMS (maxQueueLen $ statistic ex) ]
-      ]
-
-    medClientWaitingTimeView =
-      div_
-      [ lineBlockStyle
-      , textLineStyle ]
-      [ div_
-        [ labelStyle ]
-        [ text "Среднее время ожидания клиентов: " ]
-      , div_
-        []
-        [ text $ showMS (medClientWaitingTime $ statistic ex) <> " мин." ]
-      ]
-
-    medClerksWorkTimeView =
-      div_
-      [ lineBlockStyle
-      , textLineStyle ]
-      [ div_
-        [ labelStyle ]
-        [ text "Среднее рабочее время клерков: " ]
-      , div_
-        []
-        [ text $ showMS (medClerksWorkTime $ statistic ex) <> " мин." ]
       ]
 
     bankProfitView =

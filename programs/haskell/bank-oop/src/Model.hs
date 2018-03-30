@@ -5,24 +5,26 @@ import Data.Maybe (catMaybes)
 import System.Random
 
 data Experiment = Experiment
-  { bank          :: Bank
-  , newRequests   :: RequestsQueue
-  , parameters    :: Parameters
-  , statistic     :: Statistic
-  , isInitialized :: Bool
-  , isPaused      :: Bool
-  , isEnded       :: Bool
+  { bank           :: Bank
+  , newRequests    :: RequestsQueue
+  , parameters     :: Parameters
+  , statistic      :: Statistic
+  , isInitialized  :: Bool
+  , isPaused       :: Bool
+  , isEnded        :: Bool
+  , lastUsedNumber :: Int
   } deriving (Eq)
 
 initExperiment :: Experiment
 initExperiment = Experiment
-  { bank          = initBank
-  , newRequests   = initNewRequests
-  , parameters    = initParameters
-  , statistic     = initStatistic
-  , isInitialized = False
-  , isPaused      = True
-  , isEnded       = False
+  { bank           = initBank
+  , newRequests    = initNewRequests
+  , parameters     = initParameters
+  , statistic      = initStatistic
+  , isInitialized  = False
+  , isPaused       = True
+  , isEnded        = False
+  , lastUsedNumber = 0
   }
 
 changeParameter :: ParametersField -> ChangeAction -> Experiment -> Experiment
@@ -198,7 +200,10 @@ addTime t ex
         else newTime `mod` day
       , bankProfit  = newBankProfit
       }
-    , isEnded = simulationIsEnded
+    , isEnded        = simulationIsEnded
+    , lastUsedNumber = if daysChanges > 0
+      then 0
+      else lastUsedNumber newExperiment
     }
   where
     newExperiment  = updateClients $ updateClerks ex
@@ -254,6 +259,7 @@ addClients (req : reqs) ex
     { bank = (bank ex)
       { queue = queue (bank ex) ++ [client]
       }
+    , lastUsedNumber = newClientNumber
     }
   | otherwise = ex
     { statistic = (statistic ex)
@@ -266,10 +272,9 @@ addClients (req : reqs) ex
     client   = Client
       { request  = req
       , waitTime = 0
-      , number   = head $ dropWhile (`elem` usedNumbers) defaultClientNumbers
+      , number   = newClientNumber
       }
-    usedNumbers       = (number <$> queue (bank ex))
-      ++ servicedClientNumbers (bank ex)
+    newClientNumber = lastUsedNumber ex + 1
     newLeftClientsNum = leftClientsNum (statistic ex) + length (req : reqs)
 
 
@@ -443,11 +448,6 @@ initParameters = Parameters
 data Statistic = Statistic
   { servicedClientsNum   :: Int
   , leftClientsNum       :: Int
-  , minQueueLen          :: Int
-  , medQueueLen          :: Int
-  , maxQueueLen          :: Int
-  , medClientWaitingTime :: Minutes
-  , medClerksWorkTime    :: Minutes
   , bankProfit           :: Money
   , spentDays            :: Int
   , currentDay           :: Day
@@ -458,11 +458,6 @@ initStatistic :: Statistic
 initStatistic = Statistic
   { servicedClientsNum   = 0
   , leftClientsNum       = 0
-  , minQueueLen          = 0
-  , medQueueLen          = 0
-  , maxQueueLen          = 0
-  , medClientWaitingTime = 0
-  , medClerksWorkTime    = 0
   , bankProfit           = 0
   , spentDays            = 0
   , currentDay           = head fulltimeDays
@@ -556,9 +551,6 @@ defaultClerkSalary = 2
 
 defaultClerksNames :: [String]
 defaultClerksNames = (\num -> "Clerk " ++ show num) <$> [1,2..]
-
-defaultClientNumbers :: [Int]
-defaultClientNumbers = [1,2..]
 
 defaultQueueLenLimits :: (Int, Int)
 defaultQueueLenLimits = (10, 25)
