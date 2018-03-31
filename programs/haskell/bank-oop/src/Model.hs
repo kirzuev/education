@@ -190,6 +190,8 @@ updateClerks ex = ex
 
 addTime :: Minutes -> Experiment -> Experiment
 addTime t ex
+  | not (isWorkingTime (spentDays (statistic ex)) (currentTime (statistic ex)))
+    && t == 0 && not (isEnded ex) = addTime 1 ex
   | t == 0    = ex
   | otherwise = addTime (t - 1) newExperiment
     { statistic = (statistic newExperiment)
@@ -197,7 +199,7 @@ addTime t ex
       , currentDay  = newDay
       , currentTime = if simulationIsEnded
         then 0
-        else newTime `mod` day
+        else newTime
       , bankProfit  = newBankProfit
       }
     , isEnded        = simulationIsEnded
@@ -207,8 +209,9 @@ addTime t ex
     }
   where
     newExperiment  = updateClients $ updateClerks ex
-    daysChanges    = newTime `div` day
-    newTime        = currentTime (statistic ex) + 1
+    daysChanges    = updatedTime `div` day
+    updatedTime    = currentTime (statistic ex) + 1
+    newTime        = updatedTime `mod` day
     newSpentDays   = spentDays (statistic ex) + daysChanges
     clerksSalaries
       | currentDay (statistic ex) `elem` fulltimeDays
