@@ -44,7 +44,11 @@ updateExperiment _ (ChangeParameter field action) ex =
 updateExperiment g StartExperiment     ex = noEff (startExperiment g ex)
 updateExperiment _ PlayPauseExperiment ex = noEff (playPauseExperiment ex)
 updateExperiment _ ResetExperiment     _  = noEff resetExperiment
-updateExperiment _ FinishExperiment    ex = noEff (finishExperiment ex)
+updateExperiment _ FinishExperiment    ex
+  | isEnded ex || not (isInitialized ex) = noEff ex
+  | otherwise                            = (finishExperiment ex) <# do
+    threadDelay 10000
+    return FinishExperiment
 updateExperiment _ (AddTime m)         ex = noEff (addTime m ex)
 
 showMS :: Show a => a -> MisoString

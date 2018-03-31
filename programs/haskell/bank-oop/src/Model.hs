@@ -97,11 +97,7 @@ resetExperiment :: Experiment
 resetExperiment = initExperiment
 
 finishExperiment :: Experiment -> Experiment
-finishExperiment ex = addTime timeToEnd ex
-  where
-    timeToEnd     = daysToEnd * day + timeToDaysEnd
-    daysToEnd     = simulationPeriod (parameters ex) - spentDays (statistic ex) - 1
-    timeToDaysEnd = 24 * hour - currentTime (statistic ex)
+finishExperiment ex = addTime (snd defaultTimeSteps) ex
 
 addToQueue :: [Request] -> Experiment -> Experiment
 addToQueue reqs ex = newExperiment
