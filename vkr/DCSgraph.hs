@@ -11,10 +11,10 @@ data Lgraph = Lgraph
 
 instance Show Lgraph where
   show g = "L-graph: {" ++ 
-    "\n  states: {"  ++ showSet (states g) ++ "}" ++
-    "\n  symbols: {" ++ showSet (symbols g) ++ "}" ++
-    "\n  beginStates: {" ++ showSet (beginStates g) ++ "}" ++
-    "\n  finalStates: {" ++ showSet (finalStates g) ++ "}" ++
+    "\n  states: { "  ++ showSet (states g) ++ " }" ++
+    "\n  symbols: { " ++ showSet (symbols g) ++ " }" ++
+    "\n  beginStates: { " ++ showSet (beginStates g) ++ " }" ++
+    "\n  finalStates: { " ++ showSet (finalStates g) ++ " }" ++
     "\n  transitions: " ++ show (transitions g) ++
     "\n}"
 
@@ -24,7 +24,7 @@ showSet []      = ""
 showSet (c:[])  = [c]
 showSet (c:str) = [c] ++ ", " ++ showSet str
 
-data Bracket = L Int | R Int -- ^ Left/Right bracket with index
+data Bracket = L Char | R Char -- ^ Left/Right bracket with index
   deriving (Eq, Show)
 
 type State = Char
@@ -38,7 +38,7 @@ data Transition = Transition
   } deriving (Eq)
 
 instance Show Transition where
-  show t = "\n    " ++ [oldState t] ++ " --{ " ++ stateMark ++ " }-> " ++ [newState t]
+  show t = "\n    " ++ [oldState t] ++ " --{ " ++ stateMark ++ " }-> " ++ [newState t] ++ " "
     where
       stateMark  = mark ++ " : " ++ fstBr ++ " : " ++ sndBr
       mark  = case symbol t of
@@ -46,12 +46,12 @@ instance Show Transition where
         Just x     -> [x]
       fstBr = case firstBracket t of
         Nothing    -> "e"
-        Just (L x) -> "(_" ++ show x
-        Just (R x) -> ")_" ++ show x
+        Just (L x) -> "(_" ++ [x]
+        Just (R x) -> ")_" ++ [x]
       sndBr = case secondBracket t of
         Nothing    -> "e"
-        Just (L x) -> "[_" ++ show x
-        Just (R x) -> "]_" ++ show x
+        Just (L x) -> "[_" ++ [x]
+        Just (R x) -> "]_" ++ [x]
 
 -- =================
 -- | Test L-graphs |
@@ -70,34 +70,34 @@ testGraph = Lgraph
       { oldState      = '1'
       , symbol        = Just 'a'
       , firstBracket  = Nothing
-      , secondBracket = Just (L 1)
+      , secondBracket = Just (L '1')
       , newState      = '1'
       }
     l2 = Transition
       { oldState      = '1'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 1)
-      , secondBracket = Just (R 1)
+      , firstBracket  = Just (L '1')
+      , secondBracket = Just (R '1')
       , newState      = '2'
       }
     l3 = Transition
       { oldState      = '2'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 1)
-      , secondBracket = Just (R 1)
+      , firstBracket  = Just (L '1')
+      , secondBracket = Just (R '1')
       , newState      = '2'
       }
     l4 = Transition
       { oldState      = '2'
       , symbol        = Just 'c'
-      , firstBracket  = Just (R 1)
+      , firstBracket  = Just (R '1')
       , secondBracket = Nothing
       , newState      = '3'
       }
     l5 = Transition
       { oldState      = '3'
       , symbol        = Just 'c'
-      , firstBracket  = Just (R 1)
+      , firstBracket  = Just (R '1')
       , secondBracket = Nothing
       , newState      = '3'
       }
@@ -114,36 +114,36 @@ test1 = Lgraph
     l1 = Transition
       { oldState      = 'A'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 1)
-      , secondBracket = Just (L 1)
+      , firstBracket  = Just (L '1')
+      , secondBracket = Just (L '1')
       , newState      = 'A'
       }
     l2 = Transition
       { oldState      = 'A'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 2)
-      , secondBracket = Just (L 1)
+      , firstBracket  = Just (L '2')
+      , secondBracket = Just (L '1')
       , newState      = 'B'
       }
     l3 = Transition
       { oldState      = 'B'
       , symbol        = Just 'a'
-      , firstBracket  = Just (R 1)
-      , secondBracket = Just (R 1)
+      , firstBracket  = Just (R '1')
+      , secondBracket = Just (R '1')
       , newState      = 'A'
       }
     l4 = Transition
       { oldState      = 'B'
       , symbol        = Just 'a'
-      , firstBracket  = Just (R 1)
-      , secondBracket = Just (R 1)
+      , firstBracket  = Just (R '1')
+      , secondBracket = Just (R '1')
       , newState      = 'B'
       }
     l5 = Transition
       { oldState      = 'B'
       , symbol        = Nothing
-      , firstBracket  = Just (L 1)
-      , secondBracket = Just (L 1)
+      , firstBracket  = Just (L '1')
+      , secondBracket = Just (L '1')
       , newState      = 'B'
       }
 
@@ -159,29 +159,29 @@ test2 = Lgraph
     l1 = Transition
       { oldState      = 'A'
       , symbol        = Just 'a'
-      , firstBracket  = Just (L 1)
-      , secondBracket = Just (L 1)
+      , firstBracket  = Just (L '1')
+      , secondBracket = Just (L '1')
       , newState      = 'A'
       }
     l2 = Transition
       { oldState      = 'A'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 2)
-      , secondBracket = Just (L 1)
+      , firstBracket  = Just (L '2')
+      , secondBracket = Just (L '1')
       , newState      = 'B'
       }
     l3 = Transition
       { oldState      = 'B'
       , symbol        = Just 'a'
-      , firstBracket  = Just (R 1)
-      , secondBracket = Just (R 1)
+      , firstBracket  = Just (R '1')
+      , secondBracket = Just (R '1')
       , newState      = 'A'
       }
     l4 = Transition
       { oldState      = 'B'
       , symbol        = Just 'a'
-      , firstBracket  = Just (R 1)
-      , secondBracket = Just (R 2)
+      , firstBracket  = Just (R '1')
+      , secondBracket = Just (R '2')
       , newState      = 'B'
       }
 
@@ -235,28 +235,28 @@ test4 = Lgraph
     l1 = Transition
       { oldState      = 'A'
       , symbol        = Just 'a'
-      , firstBracket  = Just (R 1)
-      , secondBracket = Just (R 1)
+      , firstBracket  = Just (R '1')
+      , secondBracket = Just (R '1')
       , newState      = 'A'
       }
     l2 = Transition
       { oldState      = 'A'
       , symbol        = Nothing
       , firstBracket  = Nothing
-      , secondBracket = Just (L 1)
+      , secondBracket = Just (L '1')
       , newState      = 'B'
       }
     l3 = Transition
       { oldState      = 'B'
       , symbol        = Nothing
-      , firstBracket  = Just (L 1)
-      , secondBracket = Just (L 1)
+      , firstBracket  = Just (L '1')
+      , secondBracket = Just (L '1')
       , newState      = 'A'
       }
     l4 = Transition
       { oldState      = 'B'
       , symbol        = Just 'a'
-      , firstBracket  = Just (R 2)
+      , firstBracket  = Just (R '2')
       , secondBracket = Nothing
       , newState      = 'B'
       }
@@ -273,28 +273,28 @@ test5 = Lgraph
     l1 = Transition
       { oldState      = 'A'
       , symbol        = Just 'a'
-      , firstBracket  = Just (R 1)
-      , secondBracket = Just (R 1)
+      , firstBracket  = Just (R '1')
+      , secondBracket = Just (R '1')
       , newState      = 'A'
       }
     l2 = Transition
       { oldState      = 'A'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 1)
+      , firstBracket  = Just (L '1')
       , secondBracket = Nothing
       , newState      = 'B'
       }
     l3 = Transition
       { oldState      = 'B'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 1)
+      , firstBracket  = Just (L '1')
       , secondBracket = Nothing
       , newState      = 'A'
       }
     l4 = Transition
       { oldState      = 'B'
       , symbol        = Nothing
-      , firstBracket  = Just (R 1)
+      , firstBracket  = Just (R '1')
       , secondBracket = Nothing
       , newState      = 'B'
       }
@@ -311,28 +311,28 @@ test6 = Lgraph
     l1 = Transition
       { oldState      = 'A'
       , symbol        = Just 'a'
-      , firstBracket  = Just (R 1)
-      , secondBracket = Just (R 1)
+      , firstBracket  = Just (R '1')
+      , secondBracket = Just (R '1')
       , newState      = 'A'
       }
     l2 = Transition
       { oldState      = 'A'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 1)
+      , firstBracket  = Just (L '1')
       , secondBracket = Nothing
       , newState      = 'B'
       }
     l3 = Transition
       { oldState      = 'C'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 1)
+      , firstBracket  = Just (L '1')
       , secondBracket = Nothing
       , newState      = 'A'
       }
     l4 = Transition
       { oldState      = 'B'
       , symbol        = Nothing
-      , firstBracket  = Just (R 1)
+      , firstBracket  = Just (R '1')
       , secondBracket = Nothing
       , newState      = 'B'
       }
@@ -349,28 +349,28 @@ test7 = Lgraph
     l1 = Transition
       { oldState      = 'A'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 1)
+      , firstBracket  = Just (L '1')
       , secondBracket = Nothing
       , newState      = 'D'
       }
     l2 = Transition
       { oldState      = 'A'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 1)
+      , firstBracket  = Just (L '1')
       , secondBracket = Nothing
       , newState      = 'B'
       }
     l3 = Transition
       { oldState      = 'C'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 1)
+      , firstBracket  = Just (L '1')
       , secondBracket = Nothing
       , newState      = 'D'
       }
     l4 = Transition
       { oldState      = 'B'
       , symbol        = Nothing
-      , firstBracket  = Just (R 1)
+      , firstBracket  = Just (R '1')
       , secondBracket = Nothing
       , newState      = 'B'
       }
@@ -387,36 +387,36 @@ test8 = Lgraph
     l1 = Transition
       { oldState      = 'A'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 1)
-      , secondBracket = Just (L 1)
+      , firstBracket  = Just (L '1')
+      , secondBracket = Just (L '1')
       , newState      = 'A'
       }
     l2 = Transition
       { oldState      = 'A'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 2)
-      , secondBracket = Just (L 1)
+      , firstBracket  = Just (L '2')
+      , secondBracket = Just (L '1')
       , newState      = 'B'
       }
     l3 = Transition
       { oldState      = 'B'
       , symbol        = Just 'a'
-      , firstBracket  = Just (R 1)
-      , secondBracket = Just (R 1)
+      , firstBracket  = Just (R '1')
+      , secondBracket = Just (R '1')
       , newState      = 'A'
       }
     l4 = Transition
       { oldState      = 'B'
       , symbol        = Just 'a'
-      , firstBracket  = Just (R 1)
-      , secondBracket = Just (R 1)
+      , firstBracket  = Just (R '1')
+      , secondBracket = Just (R '1')
       , newState      = 'B'
       }
     l5 = Transition
       { oldState      = 'B'
       , symbol        = Nothing
-      , firstBracket  = Just (R 1)
-      , secondBracket = Just (L 1)
+      , firstBracket  = Just (R '1')
+      , secondBracket = Just (L '1')
       , newState      = 'B'
       }
 
@@ -432,36 +432,36 @@ test9 = Lgraph
     l1 = Transition
       { oldState      = 'A'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 1)
-      , secondBracket = Just (L 1)
+      , firstBracket  = Just (L '1')
+      , secondBracket = Just (L '1')
       , newState      = 'A'
       }
     l2 = Transition
       { oldState      = 'A'
       , symbol        = Just 'b'
-      , firstBracket  = Just (L 2)
-      , secondBracket = Just (L 1)
+      , firstBracket  = Just (L '2')
+      , secondBracket = Just (L '1')
       , newState      = 'B'
       }
     l3 = Transition
       { oldState      = 'B'
       , symbol        = Just 'a'
-      , firstBracket  = Just (R 1)
-      , secondBracket = Just (R 1)
+      , firstBracket  = Just (R '1')
+      , secondBracket = Just (R '1')
       , newState      = 'A'
       }
     l4 = Transition
       { oldState      = 'B'
       , symbol        = Just 'a'
-      , firstBracket  = Just (R 1)
-      , secondBracket = Just (R 1)
+      , firstBracket  = Just (R '1')
+      , secondBracket = Just (R '1')
       , newState      = 'B'
       }
     l5 = Transition
       { oldState      = 'B'
       , symbol        = Nothing
-      , firstBracket  = Just (L 1)
-      , secondBracket = Just (R 1)
+      , firstBracket  = Just (L '1')
+      , secondBracket = Just (R '1')
       , newState      = 'B'
       }
 
