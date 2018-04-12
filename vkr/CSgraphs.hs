@@ -322,8 +322,8 @@ reverseTransition t = Transition
 -- | Intersect two CF-graphs to CS-graph
 cfgraphsIntersection :: Lgraph -> Lgraph -> IO (Maybe Lgraph)
 cfgraphsIntersection g1 g2 = do
-  cond1    <- isLgraphCF g1
-  cond2    <- isLgraphCF g2
+  cond1 <- isLgraphCF g1
+  cond2 <- isLgraphCF g2
   case (cond1, cond2) of
     (False, False) -> do
       putStrLn "\nThe first and the second L-graphs are not context-free\n"
