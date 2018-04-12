@@ -215,9 +215,9 @@ transitionsWithStates g xs = return $
 -- ==========================
 
 -- | Concat two L-graphs
-lgraphsConcat :: Lgraph -> Lgraph -> IO (Maybe Lgraph)
+lgraphsConcat :: Lgraph -> Lgraph -> Lgraph
 lgraphsConcat g1 g2
-  | states g1 `intersect` states g2 == [] = return $ Just Lgraph
+  | states g1 `intersect` states g2 == [] = Lgraph
     { states      = states g1' `union` states g2'
     , symbols     = symbols g1 `union` symbols g2
     , beginStates = beginStates g1'
@@ -252,9 +252,9 @@ lgraphsConcat g1 g2
 -- ==================
 
 -- | Union of two L-graphs
-lgraphsUnion :: Lgraph -> Lgraph -> IO (Maybe Lgraph)
+lgraphsUnion :: Lgraph -> Lgraph -> Lgraph
 lgraphsUnion g1 g2
-  | states g1 `intersect` states g2 == [] = return $ Just Lgraph
+  | states g1 `intersect` states g2 == [] = Lgraph
     { states      = states g1' `union` states g2'
     , symbols     = symbols g1 `union` symbols g2
     , beginStates = beginStates g1'
@@ -337,7 +337,7 @@ cfgraphsIntersection g1 g2 = do
     (True, True)   -> do
       Just g2R <- cfgraphReverse g2
       if states g1 `intersect` states g2 == []
-        then lgraphsConcat
+        then return $ Just $ lgraphsConcat
           g1
             { transitions = map addLeftSndBracket $ transitions g1
             }
