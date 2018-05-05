@@ -218,34 +218,15 @@ transitionsWithStates g xs = return $
 lgraphsConcat :: Lgraph -> Lgraph -> Lgraph
 lgraphsConcat g1 g2
   | states g1 `intersect` states g2 == [] = Lgraph
-    { states      = states g1' `union` states g2'
+    { states      = states g1 `union` states g2
     , symbols     = symbols g1 `union` symbols g2
-    , beginStates = beginStates g1'
-    , finalStates = finalStates g2'
-    , transitions = transitions g1' `union` transitions g2'
+    , beginStates = beginStates g1
+    , finalStates = finalStates g2
+    , transitions = transitions g1 `union` transitions g2 `union` connections
     }
   | otherwise = lgraphsConcat g1 (renameLgraphStates g2 (states g1))
   where
-    [beg, med, fin] = take 3 $
-      filter (\v -> not (v `elem` (states g1 `union` states g2))) allStates
-    g1' = Lgraph
-      { states      = states g1 `union` [beg, med]
-      , symbols     = symbols g1
-      , beginStates = [beg]
-      , finalStates = [med]
-      , transitions = transitions g1 `union`
-        (map (emptyTransition beg) $ beginStates g1) `union`
-        (map (\v -> emptyTransition v med) $ finalStates g1)
-      }
-    g2' = Lgraph
-      { states      = states g2 `union` [med, fin]
-      , symbols     = symbols g2
-      , beginStates = [med]
-      , finalStates = [fin]
-      , transitions = transitions g2 `union`
-        (map (emptyTransition med) $ beginStates g2) `union`
-        (map (\v -> emptyTransition v fin) $ finalStates g2)
-      }
+    connections = concat $ map (\t -> map (emptyTransition t) (beginStates g2)) (finalStates g1)
 
 -- ==================
 -- | L-graphs union |
