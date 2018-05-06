@@ -336,7 +336,7 @@ cfgraphsIntersection g1 g2 = do
     (True, True)   -> do
       Just g2R <- cfgraphReverse g2
       if states g1 `intersect` states g2 == []
-        then return $ Just $ lgraphsConcat
+        then return $ Just $ cleanSndBracketsIndices $ lgraphsConcat
           g1
             { transitions = map addLeftSndBracket $ transitions g1
             }
@@ -344,6 +344,21 @@ cfgraphsIntersection g1 g2 = do
             { transitions = map clearSymbol $ map addRightSndBracket $ transitions g2R
             }
         else cfgraphsIntersection g1 (renameLgraphStates g2 (states g1))
+
+-- | Delete the last symbol from the L-graph second brackets indices.
+cleanSndBracketsIndices :: Lgraph -> Lgraph
+cleanSndBracketsIndices g = g
+  { transitions = map delSndBracketIndex (transitions g)
+  }
+
+-- | Delete the last symbol from the transition second bracket index.
+delSndBracketIndex :: Transition -> Transition
+delSndBracketIndex t = t
+  { secondBracket = case secondBracket t of
+    Nothing    -> Nothing
+    Just (L x) -> Just (L (take (length x - 1) x))
+    Just (R x) -> Just (R (take (length x - 1) x))
+  }
 
 -- | Add left second bracket
 addLeftSndBracket :: Transition -> Transition
